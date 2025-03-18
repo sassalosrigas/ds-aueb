@@ -13,22 +13,23 @@ public class JsonHandler {
     public JsonHandler() {
     }
 
-    public static Store readStoreFromJson(String filePath) {
-        try {
-            return objectMapper.readValue(new File(filePath), Store.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     public static void writeStoreToJson(Store store, String filePath) {
         try {
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
             List<Store> stores = readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-
-            stores.add(store);
+            boolean storeExists = false;
+            for (Store existingStore : stores) {
+                if (existingStore.getStoreName().equals(store.getStoreName())) {
+                    // Update the existing store's products
+                    existingStore.setProducts(store.getProducts());
+                    storeExists = true;
+                    break;
+                }
+            }
+            if (!storeExists){
+                stores.add(store);
+            }
 
             System.out.println(stores.size());
             objectMapper.writeValue(new File(filePath), stores);

@@ -1,4 +1,5 @@
 package main.java;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -8,7 +9,6 @@ public class Manager{
 
     public static void addStore() {
         Scanner in = new Scanner(System.in);
-
         try {
             System.out.println("Give name:");
             String storeName = in.nextLine();
@@ -70,6 +70,103 @@ public class Manager{
             int amount = in.nextInt();
             return new Product(productName, prodType, price, amount);
         } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void removeProductFromStore(Scanner in){
+        try{
+            List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            System.out.println("Choose store to remove product from:");
+            int counter = 1;
+            for(Store s: stores){
+                System.out.println(counter + ". " + s.getStoreName());
+                counter++;
+            }
+            int choice = in.nextInt();
+            Store currentStore = stores.get(choice-1);
+            System.out.println("Choose product to remove:");
+            counter = 1;
+            for(Product p: currentStore.getProducts()){
+                System.out.println(counter + ". " + p.getProductName());
+                counter++;
+            }
+            choice = in.nextInt();
+            currentStore.getProducts().remove(choice-1);
+            JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void addProductToStore(Scanner in){
+        try{
+            List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            System.out.println("Choose store to add product to:");
+            int counter = 1;
+            for(Store s: stores){
+                System.out.println(counter + ". " + s.getStoreName());
+                counter++;
+            }
+            int choice = in.nextInt();
+            Store currentStore = stores.get(choice-1);
+            in.nextLine();
+            currentStore.getProducts().add(addProduct(in));
+            JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void salesPerProduct(Scanner in){
+        try{
+            List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            System.out.println("Choose store to see sales per product:");
+            int counter = 1;
+            for(Store s: stores){
+                System.out.println(counter + ". " + s.getStoreName());
+                counter++;
+            }
+            int choice = in.nextInt();
+            Store currentStore = stores.get(choice-1);
+            for(Product p: currentStore.getProducts()){
+                System.out.println("Product name: "  + p.getProductName() + " Total sales: " + 0);
+            }
+            choice = in.nextInt();
+            JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void modifyAvailability(Scanner in){
+        try{
+            List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            System.out.println("Choose store to remove product from:");
+            int counter = 1;
+            for(Store s: stores){
+                System.out.println(counter + ". " + s.getStoreName());
+                counter++;
+            }
+            int choice = in.nextInt();
+            Store currentStore = stores.get(choice-1);
+            System.out.println("Choose product to modify stock:");
+            counter = 1;
+            for(Product p: currentStore.getProducts()){
+                System.out.println(counter + ". " + p.getProductName());
+                counter++;
+            }
+            choice = in.nextInt();
+            Product currentProduct = currentStore.getProducts().get(choice-1);
+            System.out.println("Give new stock:");
+            int newStock = in.nextInt();
+            currentStore.getProducts().get(choice-1).setAvailableAmount(newStock);
+            JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

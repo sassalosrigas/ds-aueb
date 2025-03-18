@@ -63,5 +63,6 @@ public class Store {
     public void setStoreLogo(String storeLogo) { this.storeLogo = storeLogo; }
 
     public List<Product> getProducts() { return products; }
+    public void setProducts(List<Product> products) { this.products = products; }
     
 }

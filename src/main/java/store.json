@@ -9,7 +9,7 @@
   "products" : [ {
     "productName" : "margarita",
     "productType" : "pizza",
-    "availableAmount" : 5000,
+    "availableAmount" : 3000,
     "price" : 9.2
   }, {
     "productName" : "special",
