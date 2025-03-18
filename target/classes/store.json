@@ -1,0 +1,25 @@
+[ {
+  "storeName" : "storeName",
+  "foodCategory" : "pizzeria",
+  "storeLogo" : "/usr/bin/images/storeLogo.png",
+  "latitude" : 37.9932963,
+  "longitude" : 23.733413,
+  "noOfVotes" : 15,
+  "stars" : 3,
+  "products" : [ {
+    "productName" : "margarita",
+    "productType" : "pizza",
+    "availableAmount" : 3000,
+    "price" : 9.2
+  }, {
+    "productName" : "special",
+    "productType" : "pizza",
+    "availableAmount" : 1000,
+    "price" : 12.0
+  }, {
+    "productName" : "chef’s Salad",
+    "productType" : "salad",
+    "availableAmount" : 100,
+    "price" : 5.0
+  } ]
+} ]
