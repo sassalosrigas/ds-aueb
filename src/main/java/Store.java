@@ -1,13 +1,33 @@
+package main.java;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class Store {
     private String storeName, foodCategory, storeLogo;
-    private double latitude, longitude, stars;
-    private int noOfVotes;
+    private double latitude, longitude;
+    private int noOfVotes, stars;
     private List<Product> products;
 
-    public Store(String storeName, double latitude, double longitude, String foodCategory, double stars,
-            int noOfVotes, String storeLogo) {
+    public Store(String storeName, double latitude, double longitude,String foodCategory, int stars, int noOfVotes, String storeLogo) {
+        this.storeName = storeName;
+        this.foodCategory = foodCategory;
+        this.storeLogo = storeLogo;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.stars = stars;
+        this.noOfVotes = noOfVotes;
+        //this.products = products;
+    }
+
+    public Store(@JsonProperty("StoreName") String storeName,
+                 @JsonProperty("Latitude") double latitude,
+                 @JsonProperty("Longitude") double longitude,
+                 @JsonProperty("FoodCategory") String foodCategory,
+                 @JsonProperty("Stars") int stars,
+                 @JsonProperty("NoOfVotes") int noOfVotes,
+                 @JsonProperty("StoreLogo") String storeLogo,
+                 @JsonProperty("Products") List<Product> products) {
         this.storeName = storeName;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -15,6 +35,10 @@ public class Store {
         this.stars = stars;
         this.noOfVotes = noOfVotes;
         this.storeLogo = storeLogo;
+        this.products = products;
+    }
+
+    public Store() {
     }
 
     public String getStoreName() { return storeName; }
@@ -29,8 +53,8 @@ public class Store {
     public String getFoodCategory() { return foodCategory; }
     public void setFoodCategory(String foodCategory) { this.foodCategory = foodCategory; }
 
-    public double getStars() { return stars; }
-    public void setStars(double stars) { this.stars = stars; }
+    public int getStars() { return stars; }
+    public void setStars(int stars) { this.stars = stars; }
 
     public int getNoOfVotes() { return noOfVotes; }
     public void setNoOfVotes(int noOfVotes) { this.noOfVotes = noOfVotes; }
