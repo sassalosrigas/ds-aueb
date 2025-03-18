@@ -134,7 +134,6 @@ public class Manager{
             for(Product p: currentStore.getProducts()){
                 System.out.println("Product name: "  + p.getProductName() + " Total sales: " + 0);
             }
-            choice = in.nextInt();
             JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
 
         } catch (IOException e) {

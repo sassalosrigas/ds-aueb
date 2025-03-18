@@ -3,7 +3,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
-import static main.java.JsonHandler.readStoreFromJson;
 import static main.java.JsonHandler.readStoresFromJson;
 
 
