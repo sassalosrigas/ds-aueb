@@ -8,12 +8,13 @@ import static main.java.JsonHandler.readStoresFromJson;
 
 public class Main {
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         System.out.println("Choose mode: (1) manager, (2) client");
         System.out.println("Now working in manager mode");
         try {
-            List<Store> s = readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            //List<Store> s = readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            List<Store> s = readStoresFromJson("store.json");
             for (Store store : s) {
                 System.out.println(store.getStoreName());
                 for (Product p : store.getProducts()) {
@@ -21,7 +22,7 @@ public class Main {
                 }
             }
             int choice;
-            do {
+            do{
                 System.out.println("Choose action: ");
                 System.out.println("1. Add store");
                 System.out.println("2. Add product to store");
@@ -30,25 +31,25 @@ public class Main {
                 System.out.println("5. Sales per product");
                 System.out.println("0. Exit");
                 choice = in.nextInt();
-                switch (choice) {
-                        case 1:
-                            Manager.addStore();
-                            break;
-                        case 2:
-                            Manager.addProductToStore(in);
-                            break;
-                        case 3:
-                            Manager.removeProductFromStore(in);
-                            break;
-                        case 4:
-                            Manager.modifyAvailability(in);
-                            break;
-                    case 5:
-                        Manager.salesPerProduct(in);
-                    case 0 :
-                        break;
+                switch (choice){
+                            case 1:
+                                Manager.addStore();
+                                break;
+                            case 2:
+                                Manager.addProductToStore(in);
+                                break;
+                            case 3:
+                                Manager.removeProductFromStore(in);
+                                break;
+                            case 4:
+                                Manager.modifyAvailability(in);
+                                break;
+                            case 5:
+                                Manager.salesPerProduct(in);
+                            case 0 :
+                                break;
                 }
-            } while (choice != 0);
+            }while (choice != 0);
             Manager.addProductToStore(in);
         } catch (IOException e) {
             throw new RuntimeException(e);

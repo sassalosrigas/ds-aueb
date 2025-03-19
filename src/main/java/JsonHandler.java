@@ -36,7 +36,7 @@ public class JsonHandler {
 
             System.out.println("Store data appended successfully.");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 

@@ -15,11 +15,11 @@ public class Manager{
 
             System.out.println("Give latitude:");
             double latitude = in.nextDouble();
-            in.nextLine();  // Consume leftover newline
+            in.nextLine();
 
             System.out.println("Give longitude:");
             double longitude = in.nextDouble();
-            in.nextLine();  // Consume leftover newline
+            in.nextLine();
 
             System.out.println("Give food category: ");
             String foodCategory = in.nextLine();
@@ -30,7 +30,7 @@ public class Manager{
 
             System.out.println("Give number of votes: ");
             int numOfVotes = in.nextInt();
-            in.nextLine();  // Consume leftover newline
+            in.nextLine();
 
             System.out.println("Give store logo: ");
             String storeLogo = in.nextLine();
@@ -45,7 +45,8 @@ public class Manager{
             }
             Store newStore = new Store(storeName, latitude, longitude, foodCategory, stars, numOfVotes, storeLogo, products);
 
-            JsonHandler.writeStoreToJson(newStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            //JsonHandler.writeStoreToJson(newStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            JsonHandler.writeStoreToJson(newStore, "store.json");
 
         } catch (java.util.InputMismatchException e) {
             System.out.println("Invalid input. Please enter the correct data type.");
@@ -76,7 +77,8 @@ public class Manager{
 
     public static void removeProductFromStore(Scanner in){
         try{
-            List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            //List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            List<Store> stores = JsonHandler.readStoresFromJson("store.json");
             System.out.println("Choose store to remove product from:");
             int counter = 1;
             for(Store s: stores){
@@ -93,7 +95,8 @@ public class Manager{
             }
             choice = in.nextInt();
             currentStore.getProducts().remove(choice-1);
-            JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            //JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            JsonHandler.writeStoreToJson(currentStore, "store.json");
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -113,7 +116,8 @@ public class Manager{
             Store currentStore = stores.get(choice-1);
             in.nextLine();
             currentStore.getProducts().add(addProduct(in));
-            JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            //JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            JsonHandler.writeStoreToJson(currentStore, "store.json");
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -134,7 +138,8 @@ public class Manager{
             for(Product p: currentStore.getProducts()){
                 System.out.println("Product name: "  + p.getProductName() + " Total sales: " + 0);
             }
-            JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            //JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            JsonHandler.writeStoreToJson(currentStore, "store.json");
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -143,7 +148,8 @@ public class Manager{
 
     public static void modifyAvailability(Scanner in){
         try{
-            List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            //List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            List<Store> stores = JsonHandler.readStoresFromJson("store.json");
             System.out.println("Choose store to remove product from:");
             int counter = 1;
             for(Store s: stores){
@@ -159,12 +165,28 @@ public class Manager{
                 counter++;
             }
             choice = in.nextInt();
-            Product currentProduct = currentStore.getProducts().get(choice-1);
             System.out.println("Give new stock:");
             int newStock = in.nextInt();
             currentStore.getProducts().get(choice-1).setAvailableAmount(newStock);
-            JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            //JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            JsonHandler.writeStoreToJson(currentStore, "store.json");
 
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void avgPrice(Scanner in){
+        try{
+            //List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            List<Store> stores = JsonHandler.readStoresFromJson("store.json");
+            int totalPrice = 0;
+            for(Store s: stores){
+                for(Product p: s.getProducts()){
+                    totalPrice += p.getPrice();
+                }
+            }
+            System.out.println("Average price: " + totalPrice/stores.size());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
