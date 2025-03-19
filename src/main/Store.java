@@ -1,4 +1,4 @@
-package main.java;
+package main;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;

@@ -1,9 +1,9 @@
-package main.java;
+package main;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
-import static main.java.JsonHandler.readStoresFromJson;
+import static main.JsonHandler.readStoresFromJson;
 
 
 public class Main {
