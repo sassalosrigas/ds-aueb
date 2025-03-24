@@ -1,5 +1,8 @@
 package main;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -7,8 +10,7 @@ import java.util.Scanner;
 public class Manager{
 
 
-    public static void addStore() {
-        Scanner in = new Scanner(System.in);
+    public static void addStore(Scanner in) {
         try {
             System.out.println("Give name:");
             String storeName = in.nextLine();
@@ -44,9 +46,16 @@ public class Manager{
                 products.add(addProduct(in));
             }
             Store newStore = new Store(storeName, latitude, longitude, foodCategory, stars, numOfVotes, storeLogo, products);
-
+            try{
+                Socket socket = new Socket("192.168.1.1", 8080);
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
+                out.writeObject(newStore);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             //JsonHandler.writeStoreToJson(newStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            JsonHandler.writeStoreToJson(newStore, "store.json");
+            //JsonHandler.writeStoreToJson(newStore, "store.json");
 
         } catch (java.util.InputMismatchException e) {
             System.out.println("Invalid input. Please enter the correct data type.");
@@ -54,8 +63,6 @@ public class Manager{
             System.out.println("No input found. Please provide all required inputs.");
         } catch (Exception e) {
             System.out.println("An unexpected error occurred: " + e.getMessage());
-        } finally {
-            in.close();
         }
     }
 

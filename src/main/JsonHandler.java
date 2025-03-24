@@ -13,11 +13,13 @@ public class JsonHandler {
     public JsonHandler() {
     }
 
+
     public static void writeStoreToJson(Store store, String filePath) {
         try {
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-            List<Store> stores = readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            //List<Store> stores = readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            List<Store> stores = readStoresFromJson("store.json");
             boolean storeExists = false;
             for (Store existingStore : stores) {
                 if (existingStore.getStoreName().equals(store.getStoreName())) {
@@ -48,6 +50,32 @@ public class JsonHandler {
         }
 
         return objectMapper.readValue(file, objectMapper.getTypeFactory().constructCollectionType(List.class, Store.class));
+    }
+
+
+    public static List<Store> parseStoresFromJsonString(String jsonStores) throws IOException {
+        if (jsonStores == null || jsonStores.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        return objectMapper.readValue(
+                jsonStores,
+                objectMapper.getTypeFactory().constructCollectionType(List.class, Store.class)
+        );
+    }
+
+    // Parses a single Store from JSON string
+    public static Store parseStoreFromJsonString(String jsonStore) throws IOException {
+        return objectMapper.readValue(jsonStore, Store.class);
+    }
+
+    // Converts a List<Store> to JSON string (for sending over network)
+    public static String serializeStoresToJsonString(List<Store> stores) throws IOException {
+        return objectMapper.writeValueAsString(stores);
+    }
+
+    // Converts a single Store to JSON string
+    public static String serializeStoreToJsonString(Store store) throws IOException {
+        return objectMapper.writeValueAsString(store);
     }
 
 }

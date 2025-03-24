@@ -1,8 +1,10 @@
 package main;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static main.JsonHandler.parseStoreFromJsonString;
 import static main.JsonHandler.readStoresFromJson;
 
 
@@ -13,7 +15,36 @@ public class Main {
         System.out.println("Choose mode: (1) manager, (2) client");
         System.out.println("Now working in manager mode");
         try {
+            List<Store> stores = JsonHandler.parseStoresFromJsonString("""
+                    [
+                    {
+                    "storeName" : "storeName",
+                    "foodCategory" : "pizzeria",
+                    "storeLogo" : "/usr/bin/images/storeLogo.png",
+                    "latitude" : 37.9932963,
+                    "longitude" : 23.733413,
+                    "noOfVotes" : 15,
+                    "stars" : 3,
+                    "products" : [ {
+                "productName" : "margarita",
+                        "productType" : "pizza",
+                        "availableAmount" : 3000,
+                        "price" : 9.2
+            }, {
+                "productName" : "special",
+                        "productType" : "pizza",
+                        "availableAmount" : 1000,
+                        "price" : 12.0
+            }, {
+                "productName" : "chef’s Salad",
+                        "productType" : "salad",
+                        "availableAmount" : 100,
+                        "price" : 5.0
+            } ]
+}]""");
+            System.out.println(stores.size());
             //List<Store> s = readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            /*
             List<Store> s = readStoresFromJson("store.json");
             for (Store store : s) {
                 System.out.println(store.getStoreName());
@@ -21,6 +52,7 @@ public class Main {
                     System.out.println(p.getProductName());
                 }
             }
+            */
             int choice;
             do{
                 System.out.println("Choose action: ");
@@ -30,10 +62,13 @@ public class Main {
                 System.out.println("4. Update stock of product");
                 System.out.println("5. Sales per product");
                 System.out.println("0. Exit");
+                new Master();
                 choice = in.nextInt();
+                System.out.println(choice);
+                in.nextLine();
                 switch (choice){
                             case 1:
-                                Manager.addStore();
+                                Manager.addStore(in);
                                 break;
                             case 2:
                                 Manager.addProductToStore(in);
@@ -50,7 +85,6 @@ public class Main {
                                 break;
                 }
             }while (choice != 0);
-            Manager.addProductToStore(in);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
