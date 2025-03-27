@@ -1,4 +1,6 @@
 package main;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,23 +21,23 @@ public class Master{
     }
     void openServer() {
         new Thread(()-> {
-            try {
+            try (ServerSocket serverSocket = new ServerSocket(8080)) {
                 System.out.println("Opening server...");
-                serverSocket = new ServerSocket(8080);
                 while (true) {
                     socket = serverSocket.accept();
-                    System.out.println("ou mpoi");
-                    Thread t = new ActionForWorkers(socket, workers.get(0));
-                    t.start();
+                    new Thread(()-> {
+                        try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+                            Store store = (Store) in.readObject();
+                            int nodeID = Math.abs(store.getStoreName().hashCode()) % workers.size();
+                            Worker targetWorker = workers.get(nodeID);
+                            targetWorker.proccessRequest("ADD_STORE:" + store.getStoreName());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                try {
-                    serverSocket.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
         }).start();
     }

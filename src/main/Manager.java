@@ -2,12 +2,14 @@ package main;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Manager{
+    static Socket socket;
 
 
     public static void addStore(Scanner in) {
@@ -46,8 +48,9 @@ public class Manager{
                 products.add(addProduct(in));
             }
             Store newStore = new Store(storeName, latitude, longitude, foodCategory, stars, numOfVotes, storeLogo, products);
-            try{
-                Socket socket = new Socket("localhost", 8080);
+            try (ServerSocket serverSocket = new ServerSocket(8080)){
+                System.out.println("Opening server...");
+                socket = serverSocket.accept();
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
                 out.writeObject(newStore);
@@ -61,7 +64,6 @@ public class Manager{
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            //JsonHandler.writeStoreToJson(newStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
             //JsonHandler.writeStoreToJson(newStore, "store.json");
 
         } catch (java.util.InputMismatchException e) {
