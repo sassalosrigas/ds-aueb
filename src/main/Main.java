@@ -44,15 +44,16 @@ public class Main {
 }]""");
             System.out.println(stores.size());
             //List<Store> s = readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            /*
-            List<Store> s = readStoresFromJson("store.json");
+
+            List<Store> s = readStoresFromJson("src/stores/store.json");
+            System.out.println(s.size());
             for (Store store : s) {
                 System.out.println(store.getStoreName());
+                System.out.println("ei");
                 for (Product p : store.getProducts()) {
                     System.out.println(p.getProductName());
                 }
             }
-            */
             int choice;
             do{
                 System.out.println("Choose action: ");

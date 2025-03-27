@@ -9,8 +9,10 @@ public class ActionForWorkers extends Thread{
     ObjectInputStream in;
     ObjectOutputStream out;
     static List<Store> storeList = new ArrayList<>();
+    private Worker worker;
 
-    public ActionForWorkers(Socket connection) {
+    public ActionForWorkers(Socket connection, Worker worker) {
+        this.worker = worker;
         try {
             out = new ObjectOutputStream(connection.getOutputStream());
             in = new ObjectInputStream(connection.getInputStream());

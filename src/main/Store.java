@@ -1,9 +1,10 @@
 package main;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Store {
+public class Store implements Serializable {
     private String storeName, foodCategory, storeLogo;
     private double latitude, longitude;
     private int noOfVotes, stars;

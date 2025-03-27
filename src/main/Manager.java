@@ -47,10 +47,17 @@ public class Manager{
             }
             Store newStore = new Store(storeName, latitude, longitude, foodCategory, stars, numOfVotes, storeLogo, products);
             try{
-                Socket socket = new Socket("192.168.1.1", 8080);
+                Socket socket = new Socket("localhost", 8080);
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
                 out.writeObject(newStore);
+                Object response = inp.readObject();
+                if(response instanceof Store){
+                    Store store = (Store)response;
+                }
+                out.close();
+                inp.close();
+                socket.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -85,7 +92,7 @@ public class Manager{
     public static void removeProductFromStore(Scanner in){
         try{
             //List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            List<Store> stores = JsonHandler.readStoresFromJson("store.json");
+            List<Store> stores = JsonHandler.readStoresFromJson("src/stores/store.json");
             System.out.println("Choose store to remove product from:");
             int counter = 1;
             for(Store s: stores){
