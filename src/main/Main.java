@@ -15,36 +15,6 @@ public class Main {
         System.out.println("Choose mode: (1) manager, (2) client");
         System.out.println("Now working in manager mode");
         try {
-            List<Store> stores = JsonHandler.parseStoresFromJsonString("""
-                    [
-                    {
-                    "storeName" : "storeName",
-                    "foodCategory" : "pizzeria",
-                    "storeLogo" : "/usr/bin/images/storeLogo.png",
-                    "latitude" : 37.9932963,
-                    "longitude" : 23.733413,
-                    "noOfVotes" : 15,
-                    "stars" : 3,
-                    "products" : [ {
-                "productName" : "margarita",
-                        "productType" : "pizza",
-                        "availableAmount" : 3000,
-                        "price" : 9.2
-            }, {
-                "productName" : "special",
-                        "productType" : "pizza",
-                        "availableAmount" : 1000,
-                        "price" : 12.0
-            }, {
-                "productName" : "chef’s Salad",
-                        "productType" : "salad",
-                        "availableAmount" : 100,
-                        "price" : 5.0
-            } ]
-}]""");
-            System.out.println(stores.size());
-            //List<Store> s = readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-
             List<Store> s = readStoresFromJson("src/stores/store.json");
             System.out.println(s.size());
             for (Store store : s) {
