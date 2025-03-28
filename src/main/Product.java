@@ -1,7 +1,9 @@
 package main;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Product {
+import java.io.Serializable;
+
+public class Product implements Serializable {
     String productName, productType;
     int availableAmount;
     double price;

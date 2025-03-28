@@ -6,7 +6,7 @@ import java.util.List;
 public class Master{
     ServerSocket serverSocket;
     Socket socket;
-    private List<Worker> workers;
+    private final List<Worker> workers;
 
     public Master(){
         this.workers = new ArrayList<Worker>();
@@ -14,9 +14,12 @@ public class Master{
             workers.add(new Worker(i));
         }
     }
+
     public static void main(String[] args) {
+
         new Master().openServer();
     }
+
     void openServer() {
         new Thread(()-> {
             try {
@@ -25,7 +28,7 @@ public class Master{
                 while (true) {
                     socket = serverSocket.accept();
                     System.out.println("ou mpoi");
-                    Thread t = new ActionForWorkers(socket, workers.get(0));
+                    Thread t = new ActionForWorkers(socket, workers);
                     t.start();
                 }
             } catch (Exception e) {
@@ -39,4 +42,9 @@ public class Master{
             }
         }).start();
     }
+
+    public static int hashToWorker(String storeName, int numOfWorkers) {
+        return Math.abs(storeName.hashCode()) % numOfWorkers;
+    }
+
 }

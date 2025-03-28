@@ -1,5 +1,4 @@
-[
-  {
+{
   "storeName" : "storeName",
   "foodCategory" : "pizzeria",
   "storeLogo" : "/usr/bin/images/storeLogo.png",
@@ -23,5 +22,4 @@
       "availableAmount" : 100,
       "price" : 5.0
     } ]
-  }
-]
+}

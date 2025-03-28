@@ -12,48 +12,18 @@ public class Manager{
 
     public static void addStore(Scanner in) {
         try {
-            System.out.println("Give name:");
-            String storeName = in.nextLine();
-
-            System.out.println("Give latitude:");
-            double latitude = in.nextDouble();
-            in.nextLine();
-
-            System.out.println("Give longitude:");
-            double longitude = in.nextDouble();
-            in.nextLine();
-
-            System.out.println("Give food category: ");
-            String foodCategory = in.nextLine();
-
-            System.out.println("Give stars: ");
-            int stars = in.nextInt();
-            in.nextLine();
-
-            System.out.println("Give number of votes: ");
-            int numOfVotes = in.nextInt();
-            in.nextLine();
-
-            System.out.println("Give store logo: ");
-            String storeLogo = in.nextLine();
-
-            List<Product> products = new ArrayList<>();
-
-            System.out.println("How many products do you want to add?: ");
-            int answer = in.nextInt();
-            for(int i = 0; i < answer; i++){
-                in.nextLine();
-                products.add(addProduct(in));
-            }
-            Store newStore = new Store(storeName, latitude, longitude, foodCategory, stars, numOfVotes, storeLogo, products);
+            System.out.println("Please provide the file with the data: ");
+            String filepath = in.nextLine();
+            Store newStore = JsonHandler.readStoreFromJson(filepath);
             try{
                 Socket socket = new Socket("localhost", 8080);
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
-                out.writeObject(newStore);
+                out.writeObject(new WorkerFunctions("ADD_STORE",newStore));
+                out.flush();
                 Object response = inp.readObject();
                 if(response instanceof Store){
-                    Store store = (Store)response;
+                    System.out.println("Server response: " + ((Store) response).getStoreName());
                 }
                 out.close();
                 inp.close();
@@ -61,9 +31,6 @@ public class Manager{
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            //JsonHandler.writeStoreToJson(newStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            //JsonHandler.writeStoreToJson(newStore, "store.json");
-
         } catch (java.util.InputMismatchException e) {
             System.out.println("Invalid input. Please enter the correct data type.");
         } catch (java.util.NoSuchElementException e) {
@@ -84,6 +51,7 @@ public class Manager{
             System.out.println("Give available amount:");
             int amount = in.nextInt();
             return new Product(productName, prodType, price, amount);
+
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
@@ -117,9 +85,10 @@ public class Manager{
         }
     }
 
+    /*
     public static void addProductToStore(Scanner in){
         try{
-            List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
+            List<Store> stores = JsonHandler.readStoresFromJson("src/stores/store.json");
             System.out.println("Choose store to add product to:");
             int counter = 1;
             for(Store s: stores){
@@ -135,6 +104,39 @@ public class Manager{
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+     */
+
+    public static void addProductToStore(Scanner in){
+        try{
+            System.out.println("Give the store's name: ");
+            String storeName = in.nextLine();
+            Product product = addProduct(in);
+            try{
+                Socket socket = new Socket("localhost", 8080);
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
+                out.writeObject(new WorkerFunctions("ADD_PRODUCT",storeName, product));
+                out.flush();
+                Object response = inp.readObject();
+                if(response instanceof Store){
+                    System.out.println("Server response: " + ((Store) response).getStoreName());
+                }
+                out.close();
+                inp.close();
+                socket.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        } catch (java.util.InputMismatchException e) {
+            System.out.println("Invalid input. Please enter the correct data type.");
+        } catch (java.util.NoSuchElementException e) {
+            System.out.println("No input found. Please provide all required inputs.");
+        } catch (Exception e) {
+            System.out.println("An unexpected error occurred: " + e.getMessage());
         }
     }
 
