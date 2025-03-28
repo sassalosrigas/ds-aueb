@@ -18,9 +18,7 @@ public class JsonHandler {
     public static void writeStoreToJson(Store store, String filePath) {
         try {
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-            //List<Store> stores = readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            List<Store> stores = readStoresFromJson("store.json");
+            List<Store> stores = readStoresFromJson(filePath);
             boolean storeExists = false;
             for (Store existingStore : stores) {
                 if (existingStore.getStoreName().equals(store.getStoreName())) {
