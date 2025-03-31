@@ -6,20 +6,21 @@
   "longitude" : 23.733413,
   "noOfVotes" : 15,
   "stars" : 3,
+  "filepath" : "src/stores/store.json",
   "products" : [ {
-      "productName" : "margarita",
-      "productType" : "pizza",
-      "availableAmount" : 3000,
-      "price" : 9.2
-    }, {
-      "productName" : "special",
-      "productType" : "pizza",
-      "availableAmount" : 1000,
-      "price" : 12.0
-    }, {
-      "productName" : "chef’s Salad",
-      "productType" : "salad",
-      "availableAmount" : 100,
-      "price" : 5.0
-    } ]
+    "productName" : "margarita",
+    "productType" : "pizza",
+    "availableAmount" : 3000,
+    "price" : 9.2
+  }, {
+    "productName" : "special",
+    "productType" : "pizza",
+    "availableAmount" : 1000,
+    "price" : 12.0
+  }, {
+    "productName" : "chef’s Salad",
+    "productType" : "salad",
+    "availableAmount" : 1000,
+    "price" : 5.0
+  } ]
 }

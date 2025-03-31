@@ -8,6 +8,7 @@ public class Store implements Serializable {
     private String storeName, foodCategory, storeLogo;
     private double latitude, longitude;
     private int noOfVotes, stars;
+    private String filepath;
     private List<Product> products;
 
     public Store(String storeName, double latitude, double longitude,String foodCategory, int stars, int noOfVotes, String storeLogo) {
@@ -40,6 +41,14 @@ public class Store implements Serializable {
     }
 
     public Store() {
+    }
+
+    public String getFilepath(){
+        return this.filepath;
+    }
+
+    public void setFilepath(String filepath){
+        this.filepath = filepath;
     }
 
     public String getStoreName() { return storeName; }

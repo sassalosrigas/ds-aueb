@@ -15,6 +15,7 @@ public class Manager{
             System.out.println("Please provide the file with the data: ");
             String filepath = in.nextLine();
             Store newStore = JsonHandler.readStoreFromJson(filepath);
+            newStore.setFilepath(filepath);
             try{
                 Socket socket = new Socket("localhost", 8080);
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -59,55 +60,31 @@ public class Manager{
 
     public static void removeProductFromStore(Scanner in){
         try{
-            //List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            List<Store> stores = JsonHandler.readStoresFromJson("src/stores/store.json");
-            System.out.println("Choose store to remove product from:");
-            int counter = 1;
-            for(Store s: stores){
-                System.out.println(counter + ". " + s.getStoreName());
-                counter++;
+            System.out.println("Give store's name:");
+            String storeName = in.nextLine();
+            System.out.println("Give product's name:");
+            String productName = in.nextLine();
+            try{
+                Socket socket = new Socket("localhost", 8080);
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
+                out.writeObject(new WorkerFunctions("REMOVE_PRODUCT",storeName, productName));
+                out.flush();
+                Object response = inp.readObject();
+                if(response instanceof Store){
+                    System.out.println("Server response: " + ((Store) response).getStoreName());
+                }
+                out.close();
+                inp.close();
+                socket.close();
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
-            int choice = in.nextInt();
-            Store currentStore = stores.get(choice-1);
-            System.out.println("Choose product to remove:");
-            counter = 1;
-            for(Product p: currentStore.getProducts()){
-                System.out.println(counter + ". " + p.getProductName());
-                counter++;
-            }
-            choice = in.nextInt();
-            currentStore.getProducts().remove(choice-1);
-            //JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            JsonHandler.writeStoreToJson(currentStore, "store.json");
-
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    /*
-    public static void addProductToStore(Scanner in){
-        try{
-            List<Store> stores = JsonHandler.readStoresFromJson("src/stores/store.json");
-            System.out.println("Choose store to add product to:");
-            int counter = 1;
-            for(Store s: stores){
-                System.out.println(counter + ". " + s.getStoreName());
-                counter++;
-            }
-            int choice = in.nextInt();
-            Store currentStore = stores.get(choice-1);
-            in.nextLine();
-            currentStore.getProducts().add(addProduct(in));
-            //JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            JsonHandler.writeStoreToJson(currentStore, "store.json");
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-     */
 
     public static void addProductToStore(Scanner in){
         try{
@@ -154,14 +131,41 @@ public class Manager{
             for(Product p: currentStore.getProducts()){
                 System.out.println("Product name: "  + p.getProductName() + " Total sales: " + 0);
             }
-            //JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
             JsonHandler.writeStoreToJson(currentStore, "store.json");
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
+    public static void modifyAvailability(Scanner in){
+        try{
+            System.out.println("Give the store's name:");
+            String storeName = in.nextLine();
+            System.out.println("Give the product's name:");
+            String productName = in.nextLine();
+            System.out.println("Give new quantity:");
+            int quantity = in.nextInt();
+            try{
+                Socket socket = new Socket("localhost", 8080);
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
+                out.writeObject(new WorkerFunctions("MODIFY_STOCK",storeName, productName, quantity));
+                out.flush();
+                Object response = inp.readObject();
+                if(response instanceof Store){
+                    System.out.println("Server response: " + ((Store) response).getStoreName());
+                }
+                out.close();
+                inp.close();
+                socket.close();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    /*
     public static void modifyAvailability(Scanner in){
         try{
             //List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
@@ -191,6 +195,8 @@ public class Manager{
             throw new RuntimeException(e);
         }
     }
+
+     */
 
     public static void avgPrice(Scanner in){
         try{

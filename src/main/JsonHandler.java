@@ -15,7 +15,7 @@ public class JsonHandler {
     }
 
 
-    public static void writeStoreToJson(Store store, String filePath) {
+    public static void writeStoresToJson(Store store, String filePath) {
         try {
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             List<Store> stores = readStoresFromJson(filePath);
@@ -38,6 +38,16 @@ public class JsonHandler {
             System.out.println("Store data appended successfully.");
         } catch (IOException e) {
             System.err.println(e.getMessage());
+        }
+    }
+
+    public static void writeStoreToJson(Store store, String filePath) {
+        try {
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            objectMapper.writeValue(new File(filePath), store);
+            System.out.println("Store data written successfully.");
+        } catch (IOException e) {
+            System.err.println("Error writing store to JSON: " + e.getMessage());
         }
     }
 
