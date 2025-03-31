@@ -8,7 +8,7 @@ import java.util.List;
 public class Worker extends Thread {
     private final int workerId;
     static List<Store> storeList = new ArrayList<>();
-
+    private Runnable task = null;
     public Worker(int workerId) {
         this.workerId = workerId;
     }
@@ -18,12 +18,33 @@ public class Worker extends Thread {
         return storeList;
     }
 
-    public synchronized boolean addStore(Store store) {
-        if(store!=null){
-            storeList.add(store);
-            return true;
+    @Override
+    public void run() {
+        while(true) {
+            synchronized (this) {
+                while(task == null) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                task.run();
+                task = null;
+            }
         }
-        return false;
+    }
+
+    public synchronized void receiveTask(Runnable task) {
+        this.task = task;
+        notify();
+    }
+
+    public synchronized void addStore(Store store) {
+        if(store!=null) {
+            storeList.add(store);
+            store.calculatePriceCategory();
+        }
     }
 
     public boolean hasStore(String storeName) {

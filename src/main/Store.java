@@ -10,6 +10,7 @@ public class Store implements Serializable {
     private int noOfVotes, stars;
     private String filepath;
     private List<Product> products;
+    private String priceCategory;
 
     public Store(String storeName, double latitude, double longitude,String foodCategory, int stars, int noOfVotes, String storeLogo) {
         this.storeName = storeName;
@@ -19,7 +20,6 @@ public class Store implements Serializable {
         this.longitude = longitude;
         this.stars = stars;
         this.noOfVotes = noOfVotes;
-        //this.products = products;
     }
 
     public Store(@JsonProperty("StoreName") String storeName,
@@ -47,8 +47,28 @@ public class Store implements Serializable {
         return this.filepath;
     }
 
+    public String getPriceCategory(){
+        return this.priceCategory;
+    }
+
     public void setFilepath(String filepath){
         this.filepath = filepath;
+    }
+
+    public void calculatePriceCategory(){
+        int counter = this.products.size();
+        double total = 0;
+        for(Product product : products){
+            total += product.getPrice();
+        }
+        double avg = total / counter;
+        if(avg <= 5){
+            this.priceCategory = "$";
+        }else if(avg <= 15){
+            this.priceCategory = "$$";
+        }else{
+            this.priceCategory = "$$$";
+        }
     }
 
     public String getStoreName() { return storeName; }

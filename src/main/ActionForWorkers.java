@@ -2,7 +2,6 @@ package main;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ActionForWorkers extends Thread{
@@ -20,20 +19,25 @@ public class ActionForWorkers extends Thread{
         }
     }
 
+    @Override
     public void run() {
         try{
             WorkerFunctions request = (WorkerFunctions)in.readObject();
             String operation = request.getOperation();
             if(operation.equals("ADD_STORE")) {
+                String storeName = request.getName();
                 Store store = (Store)request.getObject();
-                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
+                int assign = Master.hashToWorker(storeName, workers.size());
                 Worker worker = workers.get(assign);
-                boolean result = worker.addStore(store);
-                if(result){
-                    System.out.println("Stored successfully at #worker " + assign);
-                }else{
-                    System.out.println("Failed to add store at #worker " + assign);
-                }
+                worker.receiveTask(() -> {
+                    worker.addStore(store);
+                    try {
+                        out.writeObject(store);
+                        out.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
                 out.writeObject(store);
                 out.flush();
             }else if(operation.equals("ADD_PRODUCT")) {
