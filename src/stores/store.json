@@ -10,7 +10,7 @@
   "products" : [ {
     "productName" : "margarita",
     "productType" : "pizza",
-    "availableAmount" : 3000,
+    "availableAmount" : 2000,
     "price" : 9.2
   }, {
     "productName" : "special",
@@ -22,5 +22,6 @@
     "productType" : "salad",
     "availableAmount" : 1000,
     "price" : 5.0
-  } ]
+  } ],
+  "priceCategory" : "$$"
 }

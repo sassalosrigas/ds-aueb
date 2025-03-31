@@ -11,7 +11,9 @@ public class Master{
     public Master(){
         this.workers = new ArrayList<Worker>();
         for(int i=0;i<10;i++){
-            workers.add(new Worker(i));
+            Worker worker = new Worker(i);
+            worker.start();
+            workers.add(worker);
         }
     }
 

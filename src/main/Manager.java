@@ -20,7 +20,7 @@ public class Manager{
                 Socket socket = new Socket("localhost", 8080);
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
-                out.writeObject(new WorkerFunctions("ADD_STORE",newStore.getStoreName(), newStore));
+                out.writeObject(new WorkerFunctions("ADD_STORE",newStore));
                 out.flush();
                 Object response = inp.readObject();
                 if(response instanceof Store){
