@@ -113,7 +113,7 @@ public class Worker extends Thread {
         }
         return null;
     }
-    public List<Store> filterStores(String category, double lower, double upper, String price) {
+    public synchronized  List<Store> filterStores(String category, double lower, double upper, String price) {
         List<Store> stores = new ArrayList<>();
         System.out.println(category);
         System.out.println(lower);
@@ -127,7 +127,7 @@ public class Worker extends Thread {
         return stores;
     }
 
-    public List<Store> showStores(Customer customer){
+    public synchronized List<Store> showStores(Customer customer){
         List<Store> stores = new ArrayList<>();
         for(Store store : storeList){
             if(isWithInRange(store, customer)){
