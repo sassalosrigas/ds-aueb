@@ -1,4 +1,5 @@
 package main;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
@@ -7,6 +8,7 @@ public class Product implements Serializable {
     String productName, productType;
     int availableAmount;
     double price;
+    boolean showOnline;
 
     public Product(@JsonProperty("ProductName") String productName,
                    @JsonProperty("ProductType") String productType,
@@ -16,9 +18,19 @@ public class Product implements Serializable {
         this.productType = productType;
         this.availableAmount = availableAmount;
         this.price = price;
+        this.showOnline = false;
     }
 
     public Product() {
+    }
+
+    @JsonIgnore
+    public boolean getOnline(){
+        return this.showOnline;
+    }
+
+    public void setOnline(boolean online){
+        this.showOnline = online;
     }
 
     public String getProductName() {

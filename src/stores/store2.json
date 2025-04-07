@@ -1,0 +1,30 @@
+{
+  "storeName" : "kurmpamphs",
+  "foodCategory" : "souvlakeri",
+  "storeLogo" : "/usr/bin/images/storeLogo.png",
+  "latitude" : 37.9932963,
+  "longitude" : 38.733413,
+  "stars" : 3.0,
+  "noOfVotes" : 15,
+  "products" : [ {
+    "productName" : "pitagiro",
+    "productType" : "pita",
+    "availableAmount" : 2000,
+    "price" : 3.0
+  }, {
+    "productName" : "vergina",
+    "productType" : "beer",
+    "availableAmount" : 1000,
+    "price" : 2.0
+  }, {
+    "productName" : "souvlaki",
+    "productType" : "pita",
+    "availableAmount" : 1000,
+    "price" : 2.0
+  }, {
+    "productName" : "panseta",
+    "productType" : "mprizola",
+    "availableAmount" : 4,
+    "price" : 5.0
+  } ]
+}

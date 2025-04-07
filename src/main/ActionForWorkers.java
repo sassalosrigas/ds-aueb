@@ -2,6 +2,7 @@ package main;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ActionForWorkers extends Thread{
@@ -23,6 +24,15 @@ public class ActionForWorkers extends Thread{
     public void run() {
         try{
             WorkerFunctions request = (WorkerFunctions)in.readObject();
+            processRequest(request);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void processRequest(WorkerFunctions request) {
+        try{
             String operation = request.getOperation();
             if(operation.equals("ADD_STORE")) {
                 Store store = (Store)request.getObject();
@@ -83,6 +93,63 @@ public class ActionForWorkers extends Thread{
                         e.printStackTrace();
                     }
                 });
+            }else if(operation.equals("SHOW_STORES")) {
+                Customer customer = (Customer)request.getObject();
+                List<Store> stores = new ArrayList<Store>();
+                List<Thread> workerThreads = new ArrayList<>();
+                for(Worker worker: workers) {
+                    Thread t = new Thread(() -> {
+                        List<Store> workerStores = worker.showStores(customer);
+                        synchronized(stores) {
+                            stores.addAll(workerStores);
+                        }
+                    });
+                    workerThreads.add(t);
+                    t.start();
+                }
+                for(Thread t : workerThreads) {
+                    try {
+                        t.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    out.writeObject(stores);
+                    out.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }else if(operation.equals("SEARCH_STORES")) {
+                String foodCategory = request.getName();
+                double lowerStars = request.getDouble1();
+                double upperStars = request.getDouble2();
+                String priceCategory = request.getName2();
+                List<Store> stores = new ArrayList<Store>();
+                List<Thread> workerThreads = new ArrayList<>();
+                for(Worker worker: workers) {
+                    Thread t = new Thread(() -> {
+                        List<Store> workerStores = worker.filterStores(foodCategory, lowerStars, upperStars, priceCategory);
+                        synchronized(stores) {
+                            stores.addAll(workerStores);
+                        }
+                    });
+                    workerThreads.add(t);
+                    t.start();
+                }
+                for(Thread t : workerThreads) {
+                    try {
+                        t.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    out.writeObject(stores);
+                    out.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }catch(Exception e){
             e.printStackTrace();

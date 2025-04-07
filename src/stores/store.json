@@ -6,7 +6,6 @@
   "longitude" : 23.733413,
   "noOfVotes" : 15,
   "stars" : 3,
-  "filepath" : "src/stores/store.json",
   "products" : [ {
     "productName" : "margarita",
     "productType" : "pizza",
@@ -22,6 +21,10 @@
     "productType" : "salad",
     "availableAmount" : 1000,
     "price" : 5.0
-  } ],
-  "priceCategory" : "$$"
+  }, {
+    "productName" : "skepasti",
+    "productType" : "pizza",
+    "availableAmount" : 40,
+    "price" : 43.0
+  } ]
 }

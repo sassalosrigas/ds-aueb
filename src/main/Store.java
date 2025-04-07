@@ -1,4 +1,5 @@
 package main;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
@@ -6,13 +7,13 @@ import java.util.List;
 
 public class Store implements Serializable {
     private String storeName, foodCategory, storeLogo;
-    private double latitude, longitude;
-    private int noOfVotes, stars;
+    private double latitude, longitude, stars;
+    private int noOfVotes;
     private String filepath;
     private List<Product> products;
     private String priceCategory;
 
-    public Store(String storeName, double latitude, double longitude,String foodCategory, int stars, int noOfVotes, String storeLogo) {
+    public Store(String storeName, double latitude, double longitude,String foodCategory, double stars, int noOfVotes, String storeLogo) {
         this.storeName = storeName;
         this.foodCategory = foodCategory;
         this.storeLogo = storeLogo;
@@ -43,10 +44,12 @@ public class Store implements Serializable {
     public Store() {
     }
 
+    @JsonIgnore
     public String getFilepath(){
         return this.filepath;
     }
 
+    @JsonIgnore
     public String getPriceCategory(){
         return this.priceCategory;
     }
@@ -65,7 +68,7 @@ public class Store implements Serializable {
         if(avg <= 5){
             this.priceCategory = "$";
         }else if(avg <= 15){
-            this.priceCategory = "$$";
+            this.priceCategory =  "$$";
         }else{
             this.priceCategory = "$$$";
         }
@@ -83,8 +86,8 @@ public class Store implements Serializable {
     public String getFoodCategory() { return foodCategory; }
     public void setFoodCategory(String foodCategory) { this.foodCategory = foodCategory; }
 
-    public int getStars() { return stars; }
-    public void setStars(int stars) { this.stars = stars; }
+    public double getStars() { return stars; }
+    public void setStars(double stars) { this.stars = stars; }
 
     public int getNoOfVotes() { return noOfVotes; }
     public void setNoOfVotes(int noOfVotes) { this.noOfVotes = noOfVotes; }

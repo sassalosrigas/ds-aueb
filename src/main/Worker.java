@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Worker extends Thread {
     private final int workerId;
-    static List<Store> storeList = new ArrayList<>();
+    private List<Store> storeList = new ArrayList<>();
     private Runnable task = null;
     public Worker(int workerId) {
         this.workerId = workerId;
@@ -41,7 +41,7 @@ public class Worker extends Thread {
     }
 
     public synchronized void addStore(Store store) {
-        if(store!=null) {
+        if(store!=null && !storeList.contains(store)) {
             storeList.add(store);
             store.calculatePriceCategory();
         }
@@ -112,5 +112,55 @@ public class Worker extends Thread {
             }
         }
         return null;
+    }
+    public List<Store> filterStores(String category, double lower, double upper, String price) {
+        List<Store> stores = new ArrayList<>();
+        System.out.println(category);
+        System.out.println(lower);
+        System.out.println(upper);
+        System.out.println(price);
+        for(Store store : storeList){
+            if(store.getFoodCategory().equals(category) && store.getStars()>= lower && store.getStars()<= upper && store.getPriceCategory().equals(price)){
+                stores.add(store);
+            }
+        }
+        return stores;
+    }
+
+    public List<Store> showStores(Customer customer){
+        List<Store> stores = new ArrayList<>();
+        for(Store store : storeList){
+            if(isWithInRange(store, customer)){
+                stores.add(store);
+            }
+        }
+        return stores;
+    }
+
+    public boolean isWithInRange(Store store, Customer customer) {
+        double storeLat = store.getLatitude();
+        double storeLong = store.getLongitude();
+        double customerLat = customer.getLatitude();
+        double customerLong = customer.getLongitude();
+
+        final double R = 6371.0; // Earth's radius in kilometers
+
+        double lat1 = Math.toRadians(customerLat);
+        double lon1 = Math.toRadians(customerLong);
+        double lat2 = Math.toRadians(storeLat);
+        double lon2 = Math.toRadians(storeLong);
+
+        double dLat = lat2 - lat1;
+        double dLon = lon2 - lon1;
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1) * Math.cos(lat2) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c;
+
+        System.out.println("Distance: " + distance + " km");
+
+        return distance <= 5.0;
     }
 }

@@ -1,0 +1,30 @@
+{
+  "storeName" : "kurgiorgis",
+  "foodCategory" : "taverna",
+  "storeLogo" : "/usr/bin/images/storeLogo.png",
+  "latitude" : 37.9932963,
+  "longitude" : 23.733413,
+  "stars" : 3.0,
+  "noOfVotes" : 15,
+  "products" : [ {
+    "productName" : "xoirino",
+    "productType" : "mprizola",
+    "availableAmount" : 2000,
+    "price" : 3.0
+  }, {
+    "productName" : "kaiser",
+    "productType" : "beer",
+    "availableAmount" : 1000,
+    "price" : 2.0
+  }, {
+    "productName" : "xoriatiki",
+    "productType" : "salad",
+    "availableAmount" : 1000,
+    "price" : 2.0
+  }, {
+    "productName" : "saganaki",
+    "productType" : "turi",
+    "availableAmount" : 4,
+    "price" : 5.0
+  } ]
+}

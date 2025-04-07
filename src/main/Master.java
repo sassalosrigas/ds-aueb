@@ -1,15 +1,15 @@
 package main;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Master{
     ServerSocket serverSocket;
     Socket socket;
-    private final List<Worker> workers;
+    private final List<Worker> workers = Collections.synchronizedList(new ArrayList<Worker>());
 
     public Master(){
-        this.workers = new ArrayList<Worker>();
         for(int i=0;i<10;i++){
             Worker worker = new Worker(i);
             worker.start();
