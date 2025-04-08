@@ -9,12 +9,14 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
+        new Master();
+        Manager.addStore(new Scanner("src/stores/store.json"));
+        Manager.addStore(new Scanner("src/stores/store2.json"));
+        Manager.addStore(new Scanner("src/stores/store3.json"));
         System.out.println("Choose mode: (1) manager, (2) client");
         int mode = in.nextInt();
-        new Master();
         if(mode == 1){
             System.out.println("Now working in manager mode");
-            Customer customer = new Customer("aaa", "123", 37.9932963, 38.733413);
             try {
                 int choice;
                 do{
@@ -24,9 +26,6 @@ public class Main {
                     System.out.println("3. Remove product from store");
                     System.out.println("4. Update stock of product");
                     System.out.println("5. Sales per product");
-                    System.out.println("6. Show nearby stores");
-                    System.out.println("7. Filter stores");
-                    System.out.println("8. Buy products");
                     System.out.println("0. Exit");
                     choice = in.nextInt();
                     System.out.println(choice);
@@ -47,15 +46,6 @@ public class Main {
                         case 5:
                             Manager.salesPerProduct(in);
                             break;
-                        case 6:
-                            customer.showNearbyStores();
-                            break;
-                        case 7:
-                            customer.filterStores(in);
-                            break;
-                        case 8:
-                            customer.buyProducts(in);
-                            break;
                         case 0 :
                             break;
                     }
@@ -65,19 +55,29 @@ public class Main {
             }
         }else{
             System.out.println("Now working in customer mode");
+            Customer customer = new Customer("aaa", "123", 37.9932963, 38.733413);
             try{
                 int choice;
                 do {
                     System.out.println("Choose action: ");
                     System.out.println("1. Show nearby stores");
+                    System.out.println("2. Filter stores");
+                    System.out.println("3. Buy products");
+                    System.out.println("0. Exit");
                     choice = in.nextInt();
                     System.out.println(choice);
                     in.nextLine();
                     switch (choice){
                         case 1:
-                            //Customer.showNearbyStores();
+                            customer.showNearbyStores();
                             break;
-                        case 0:
+                        case 2:
+                            customer.filterStores(in);
+                            break;
+                        case 3:
+                            customer.buyProducts(in);
+                            break;
+                        case 0 :
                             break;
                     }
                 }while(choice!=0);
