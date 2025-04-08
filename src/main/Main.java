@@ -1,7 +1,5 @@
 package main;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Scanner;
 
 public class Main {
@@ -10,11 +8,11 @@ public class Main {
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         new Master();
+        System.out.println("Choose mode: (1) manager, (2) client");
+        int mode = in.nextInt();
         Manager.addStore(new Scanner("src/stores/store.json"));
         Manager.addStore(new Scanner("src/stores/store2.json"));
         Manager.addStore(new Scanner("src/stores/store3.json"));
-        System.out.println("Choose mode: (1) manager, (2) client");
-        int mode = in.nextInt();
         if(mode == 1){
             System.out.println("Now working in manager mode");
             try {
@@ -63,6 +61,7 @@ public class Main {
                     System.out.println("1. Show nearby stores");
                     System.out.println("2. Filter stores");
                     System.out.println("3. Buy products");
+                    System.out.println("4. Rate store");
                     System.out.println("0. Exit");
                     choice = in.nextInt();
                     System.out.println(choice);
@@ -76,6 +75,9 @@ public class Main {
                             break;
                         case 3:
                             customer.buyProducts(in);
+                            break;
+                        case 4:
+                            customer.rateStore(in);
                             break;
                         case 0 :
                             break;

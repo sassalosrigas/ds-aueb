@@ -70,7 +70,7 @@ public class Customer implements Serializable {
                         counter = 1;
                         System.out.println("Choose product");
                         for(Product product : store.getProducts()){
-                            System.out.println(counter + product.getProductName());
+                            System.out.println(counter + ". " +product.getProductName());
                             counter++;
                         }
                         System.out.println("0. Complete purchase");
@@ -88,7 +88,6 @@ public class Customer implements Serializable {
                             break;
                         }
                     }
-                    JsonHandler.writeStoreToJson(store, store.getFilepath());
                     out.close();
                     inp.close();
                     socket.close();
@@ -155,6 +154,47 @@ public class Customer implements Serializable {
             throw new RuntimeException(e);
         }
     }
+
+    public void rateStore(Scanner in){
+        try{
+            Socket socket = new Socket("localhost", 8080);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
+            out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
+            out.flush();
+            Object response = inp.readObject();
+            if(response instanceof ArrayList){
+                System.out.println("Server response: ");
+                System.out.println("Choose store to rate");
+                for(Store store : (ArrayList<Store>)response){
+                    System.out.println(store.getStoreName());
+                }
+                int choice = in.nextInt();
+                if(choice >= 1 && choice <= ((ArrayList<?>) response).size()){
+                    Store store = ((ArrayList<Store>) response).get(choice-1);
+                    System.out.println("Original rating: " + store.getStars());
+                    System.out.println("Give rating");
+                    int rating = in.nextInt();
+                    out.writeObject(new WorkerFunctions("APPLY_RATING",store, rating));
+                    out.flush();
+                    Object response2 = inp.readObject();
+                    if(response2 instanceof String){
+                        System.out.println(response2);
+                    }
+                }
+                out.close();
+                inp.close();
+                socket.close();
+            }
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public String getUsername() {
         return username;

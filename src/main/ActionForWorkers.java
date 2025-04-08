@@ -173,6 +173,45 @@ public class ActionForWorkers extends Thread{
                         throw new RuntimeException(e);
                     }
                 });
+            }else if(operation.equals("SHOW_ALL_STORES")) {
+                List<Store> stores = new ArrayList<Store>();
+                List<Thread> workerThreads = new ArrayList<>();
+                for(Worker worker: workers) {
+                    Thread t = new Thread(() -> {
+                        synchronized(stores) {
+                            stores.addAll(worker.showAllStores());
+                        }
+                    });
+                    workerThreads.add(t);
+                    t.start();
+                }
+                for(Thread t : workerThreads) {
+                    try {
+                        t.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    out.writeObject(stores);
+                    out.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }else if(operation.equals("APPLY_RATING")){
+                Store store = (Store)request.getObject();
+                int rating = request.getNum();
+                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
+                Worker worker = workers.get(assign);
+                worker.receiveTask(() -> {
+                    worker.rateStore(store, rating);
+                    try{
+                        out.writeObject("Successful");
+                        out.flush();
+                    }catch(IOException e){
+                        throw new RuntimeException(e);
+                    }
+                });
             }
         }catch(Exception e){
             e.printStackTrace();

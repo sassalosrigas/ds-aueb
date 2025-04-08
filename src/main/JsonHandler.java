@@ -22,7 +22,6 @@ public class JsonHandler {
             boolean storeExists = false;
             for (Store existingStore : stores) {
                 if (existingStore.getStoreName().equals(store.getStoreName())) {
-                    // Update the existing store's products
                     existingStore.setProducts(store.getProducts());
                     storeExists = true;
                     break;

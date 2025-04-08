@@ -75,6 +75,9 @@ public class Worker extends Thread {
                     if(p.getProductName().equals(product.getProductName())){
                         if(product.getAvailableAmount() >= quantity){
                             product.setAvailableAmount(product.getAvailableAmount() - quantity);
+                            if (product.getAvailableAmount() == 0) {
+                                product.setOnline(false);
+                            }
                             return;
                         }
                     }
@@ -112,7 +115,11 @@ public class Worker extends Thread {
     public synchronized void removeProduct(String storeName, String productName) {
         if(hasStore(storeName) && hasProduct(storeName, productName)){
             Store store = getStore(storeName);
-            store.getProducts().removeIf(p -> p.getProductName().equals(productName));
+            for(Product product : store.getProducts()){
+                if(product.getProductName().equals(productName)){
+                    product.setOnline(false);
+                }
+            }
             JsonHandler.writeStoreToJson(store, store.getFilepath());
             System.out.println("Removed product " + productName + " from store " + store.getStoreName());
         }else{
@@ -142,6 +149,20 @@ public class Worker extends Thread {
         return stores;
     }
 
+    public void rateStore(Store store, int rating){
+        for(Store s : storeList){
+            if(s.getStoreName().equals(store.getStoreName())){
+                s.applyRating(rating);
+                System.out.println("Rate stored " + s.getStars());
+                return;
+            }
+        }
+    }
+
+    public synchronized List<Store> showAllStores(){
+        return new ArrayList<>(storeList);
+    }
+
     public synchronized List<Store> showStores(Customer customer){
         List<Store> stores = new ArrayList<>();
         for(Store store : storeList){
@@ -151,6 +172,7 @@ public class Worker extends Thread {
         }
         return stores;
     }
+
 
     public boolean isWithInRange(Store store, Customer customer) {
         double storeLat = store.getLatitude();

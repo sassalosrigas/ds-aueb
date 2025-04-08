@@ -74,6 +74,11 @@ public class Store implements Serializable {
         }
     }
 
+    public void applyRating(int rating){
+        double total = stars * noOfVotes + rating;
+        this.stars = total/ (noOfVotes + 1);
+    }
+
     public String getStoreName() { return storeName; }
     public void setStoreName(String storeName) { this.storeName = storeName; }
 
