@@ -1,30 +1,30 @@
 {
-  "storeName" : "storeName",
+  "storeName" : "PizzaLab",
   "foodCategory" : "pizzeria",
-  "storeLogo" : "/usr/bin/images/storeLogo.png",
+  "storeLogo" : "src/stores/pizzalab.png",
   "latitude" : 37.9932963,
   "longitude" : 23.733413,
   "noOfVotes" : 15,
   "stars" : 3,
   "products" : [ {
-    "productName" : "margarita",
+    "productName" : "Margherita",
     "productType" : "pizza",
     "availableAmount" : 2000,
     "price" : 9.2
   }, {
-    "productName" : "special",
+    "productName" : "Special",
     "productType" : "pizza",
     "availableAmount" : 1000,
     "price" : 12.0
   }, {
-    "productName" : "chef’s Salad",
+    "productName" : "Chef’s Salad",
     "productType" : "salad",
     "availableAmount" : 1000,
     "price" : 5.0
   }, {
-    "productName" : "skepasti",
+    "productName" : "Greek",
     "productType" : "pizza",
-    "availableAmount" : 40,
-    "price" : 43.0
+    "availableAmount" : 900,
+    "price" : 8.0
   } ]
 }
