@@ -1,5 +1,5 @@
 {
-  "storeName" : "kurgiorgis",
+  "storeName" : "Taverna To Asylo",
   "foodCategory" : "taverna",
   "storeLogo" : "/usr/bin/images/storeLogo.png",
   "latitude" : 37.9932963,
@@ -7,22 +7,22 @@
   "stars" : 3.0,
   "noOfVotes" : 15,
   "products" : [ {
-    "productName" : "xoirino",
+    "productName" : "Xoirini Mprizola",
     "productType" : "mprizola",
     "availableAmount" : 2000,
     "price" : 3.0
   }, {
-    "productName" : "kaiser",
+    "productName" : "Mamos",
     "productType" : "beer",
     "availableAmount" : 1000,
     "price" : 2.0
   }, {
-    "productName" : "xoriatiki",
+    "productName" : "Xoriatiki",
     "productType" : "salad",
     "availableAmount" : 1000,
     "price" : 2.0
   }, {
-    "productName" : "saganaki",
+    "productName" : "Saganaki Tyri",
     "productType" : "turi",
     "availableAmount" : 4,
     "price" : 5.0

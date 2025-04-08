@@ -1,5 +1,5 @@
 {
-  "storeName" : "kurmpamphs",
+  "storeName" : "Souvlaki Kir Babis",
   "foodCategory" : "souvlakeri",
   "storeLogo" : "/usr/bin/images/storeLogo.png",
   "latitude" : 37.9932963,
@@ -7,22 +7,22 @@
   "stars" : 3.0,
   "noOfVotes" : 15,
   "products" : [ {
-    "productName" : "pitagiro",
+    "productName" : "Gyros Kotopoulo se Pita",
     "productType" : "pita",
     "availableAmount" : 1500,
     "price" : 3.0
   }, {
-    "productName" : "vergina",
+    "productName" : "Vergina",
     "productType" : "beer",
     "availableAmount" : 500,
     "price" : 2.0
   }, {
-    "productName" : "souvlaki",
+    "productName" : "Kotompeikon se Pita",
     "productType" : "pita",
     "availableAmount" : 1000,
     "price" : 2.0
   }, {
-    "productName" : "panseta",
+    "productName" : "Pansetakia",
     "productType" : "mprizola",
     "availableAmount" : 4,
     "price" : 5.0
