@@ -1,8 +1,6 @@
 package main;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class Master{
     ServerSocket serverSocket;
@@ -30,7 +28,7 @@ public class Master{
                 while (true) {
                     socket = serverSocket.accept();
                     System.out.println("ou mpoi");
-                    Thread t = new ActionForWorkers(socket, workers);
+                    Thread t = new ActionForWorkers(socket, workers, this);
                     t.start();
                 }
             } catch (Exception e) {
@@ -48,5 +46,17 @@ public class Master{
     public static int hashToWorker(String storeName, int numOfWorkers) {
         return Math.abs(storeName.hashCode()) % numOfWorkers;
     }
+//trying mapreduce
+    public Map<String, Integer> aggregateProductSales(String storeName) {
+        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
+        for (Worker worker : workers) {
+            mappedResults.addAll(worker.mapProductSales(storeName));
+        }
 
+        Map<String, Integer> results = new HashMap<>();
+        for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
+            results.put(entry.getKey(), entry.getValue());
+        }
+        return results;
+    }
 }

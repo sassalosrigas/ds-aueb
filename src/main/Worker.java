@@ -2,6 +2,7 @@ package main;
 
 import java.io.*;
 import java.net.*;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,6 +76,7 @@ public class Worker extends Thread {
                     if(p.getProductName().equals(product.getProductName())){
                         if(product.getAvailableAmount() >= quantity){
                             product.setAvailableAmount(product.getAvailableAmount() - quantity);
+                            product.addSales(quantity);
                             if (product.getAvailableAmount() == 0) {
                                 product.setOnline(false);
                             }
@@ -200,4 +202,21 @@ public class Worker extends Thread {
 
         return distance <= 5.0;
     }
+
+    //trying mapreduce
+    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductSales(String storeName) {
+        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
+        Store store = getStore(storeName);
+        if (store != null) {
+            for (Product product : store.getProducts()) {
+                results.add(new AbstractMap.SimpleEntry<>(
+                product.getProductName(),
+                product.getTotalSales()
+                ));
+            }
+        }
+        return results;
+    }
+
 }
+

@@ -4,14 +4,17 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ActionForWorkers extends Thread{
     ObjectInputStream in;
     ObjectOutputStream out;
     private final List<Worker> workers;
+    private final Master master;
 
-    public ActionForWorkers(Socket connection, List<Worker> workers) {
+    public ActionForWorkers(Socket connection, List<Worker> workers, Master master) {
         this.workers = workers;
+        this.master = master;
         try {
             out = new ObjectOutputStream(connection.getOutputStream());
             in = new ObjectInputStream(connection.getInputStream());
@@ -212,6 +215,10 @@ public class ActionForWorkers extends Thread{
                         throw new RuntimeException(e);
                     }
                 });
+            }else if (operation.equals("PRODUCT_SALES")) {
+                String storeName = (String) request.getName();
+                Map<String, Integer> results = this.master.aggregateProductSales(storeName);
+                out.writeObject(results);
             }
         }catch(Exception e){
             e.printStackTrace();
