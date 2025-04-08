@@ -26,6 +26,7 @@ public class Main {
                     System.out.println("5. Sales per product");
                     System.out.println("6. Show nearby stores");
                     System.out.println("7. Filter stores");
+                    System.out.println("8. Buy products");
                     System.out.println("0. Exit");
                     choice = in.nextInt();
                     System.out.println(choice);
@@ -51,6 +52,9 @@ public class Main {
                             break;
                         case 7:
                             customer.filterStores(in);
+                            break;
+                        case 8:
+                            customer.buyProducts(in);
                             break;
                         case 0 :
                             break;

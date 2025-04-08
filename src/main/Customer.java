@@ -47,6 +47,63 @@ public class Customer implements Serializable {
         }
     }
 
+    public void buyProducts(Scanner in){
+        try{
+            Socket socket = new Socket("localhost", 8080);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
+            out.writeObject(new WorkerFunctions("SHOW_STORES", this));
+            out.flush();
+            Object response = inp.readObject();
+            if(response instanceof ArrayList){
+                System.out.println("Server response: ");
+                int counter = 1;
+                for(Store store : (ArrayList<Store>)response){
+                    System.out.println(counter + store.getStoreName());
+                    counter++;
+                }
+                System.out.println("Choose store");
+                int choice = in.nextInt();
+                if(choice >= 1 && choice <= ((ArrayList<?>) response).size()){
+                    Store store = ((ArrayList<Store>) response).get(choice-1);
+                    while(true){
+                        counter = 1;
+                        System.out.println("Choose product");
+                        for(Product product : store.getProducts()){
+                            System.out.println(counter + product.getProductName());
+                            counter++;
+                        }
+                        System.out.println("0. Complete purchase");
+                        choice = in.nextInt();
+                        if(choice >= 1 && choice <= store.getProducts().size()){
+                            System.out.println("Choose quantity");
+                            int quantity = in.nextInt();
+                            out.writeObject(new WorkerFunctions("BUY_PRODUCT", store.getProducts().get(choice-1),store, quantity));
+                            out.flush();
+                            Object response2 = inp.readObject();
+                            if(response2 instanceof Store){
+                                store = (Store) response2;
+                            }
+                        }else{
+                            break;
+                        }
+                    }
+                    JsonHandler.writeStoreToJson(store, store.getFilepath());
+                    out.close();
+                    inp.close();
+                    socket.close();
+                }
+            }
+
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void filterStores(Scanner in){
         try{
             String category = "", price = "";

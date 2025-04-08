@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class WorkerFunctions implements Serializable {
     String operation;
-    Object object;
+    Object object, object2;
     String name;
     String name2;
     int num;
@@ -51,6 +51,13 @@ public class WorkerFunctions implements Serializable {
         this.num = num;
     }
 
+    public WorkerFunctions(String operation, Object object,Object object2, int num){
+        this.operation = operation;
+        this.object = object;
+        this.object2 = object2;
+        this.num = num;
+    }
+
     public String getOperation() {
         return this.operation;
     }
@@ -76,5 +83,9 @@ public class WorkerFunctions implements Serializable {
     }
     public double getDouble2() {
         return this.double2;
+    }
+
+    public Object getObject2() {
+        return this.object2;
     }
 }

@@ -23,8 +23,16 @@ public class ActionForWorkers extends Thread{
     @Override
     public void run() {
         try{
-            WorkerFunctions request = (WorkerFunctions)in.readObject();
-            processRequest(request);
+            try {
+                while (true) {
+                    WorkerFunctions request = (WorkerFunctions) in.readObject();
+                    processRequest(request);
+                }
+            } catch (EOFException e) {
+                System.out.println("Client disconnected.");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -150,6 +158,21 @@ public class ActionForWorkers extends Thread{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }else if(operation.equals("BUY_PRODUCT")) {
+                Product product = (Product)request.getObject();
+                Store store = (Store)request.getObject2();
+                int quantity = (Integer) request.getNum();
+                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
+                Worker worker = workers.get(assign);
+                worker.receiveTask(() -> {
+                    worker.buyProduct(store, product, quantity);
+                    try{
+                        out.writeObject(store);
+                        out.flush();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
         }catch(Exception e){
             e.printStackTrace();

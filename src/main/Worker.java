@@ -68,6 +68,21 @@ public class Worker extends Thread {
         return false;
     }
 
+    public synchronized void buyProduct(Store store, Product product, int quantity) {
+        for(Store s: storeList){
+            if(s.getStoreName().equals(store.getStoreName())){
+                for(Product p : s.getProducts()){
+                    if(p.getProductName().equals(product.getProductName())){
+                        if(product.getAvailableAmount() >= quantity){
+                            product.setAvailableAmount(product.getAvailableAmount() - quantity);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public synchronized void modifyStock(String storeName, String productName, int quantity) {
         if(hasStore(storeName) && hasProduct(storeName, productName)){
             Store store = getStore(storeName);

@@ -9,7 +9,7 @@
   "products" : [ {
     "productName" : "pitagiro",
     "productType" : "pita",
-    "availableAmount" : 2000,
+    "availableAmount" : 1500,
     "price" : 3.0
   }, {
     "productName" : "vergina",
