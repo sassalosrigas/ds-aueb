@@ -59,7 +59,7 @@ public class Customer implements Serializable {
                 System.out.println("Server response: ");
                 int counter = 1;
                 for(Store store : (ArrayList<Store>)response){
-                    System.out.println(counter + store.getStoreName());
+                    System.out.println(counter +". "+ store.getStoreName());
                     counter++;
                 }
                 System.out.println("Choose store");
@@ -70,8 +70,10 @@ public class Customer implements Serializable {
                         counter = 1;
                         System.out.println("Choose product");
                         for(Product product : store.getProducts()){
-                            System.out.println(counter + ". " +product.getProductName());
-                            counter++;
+                            if (product.isOnline()) {
+                                System.out.println(counter + ". " + product.getProductName());
+                                counter++;
+                            }    
                         }
                         System.out.println("0. Complete purchase");
                         choice = in.nextInt();

@@ -8,86 +8,90 @@ public class Main {
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         new Master();
-        System.out.println("Choose mode: (1) manager, (2) client");
+        System.out.println("Choose mode: (1) manager, (2) client, (3) Exit");
         int mode = in.nextInt();
         Manager.addStore(new Scanner("src/stores/store.json"));
         Manager.addStore(new Scanner("src/stores/store2.json"));
         Manager.addStore(new Scanner("src/stores/store3.json"));
-        if(mode == 1){
-            System.out.println("Now working in manager mode");
-            try {
-                int choice;
-                do{
-                    System.out.println("Choose action: ");
-                    System.out.println("1. Add store");
-                    System.out.println("2. Add product to store");
-                    System.out.println("3. Remove product from store");
-                    System.out.println("4. Update stock of product");
-                    System.out.println("5. Sales per product");
-                    System.out.println("0. Exit");
-                    choice = in.nextInt();
-                    System.out.println(choice);
-                    in.nextLine();
-                    switch (choice){
-                        case 1:
-                            Manager.addStore(in);
-                            break;
-                        case 2:
-                            Manager.addProductToStore(in);
-                            break;
-                        case 3:
-                            Manager.removeProductFromStore(in);
-                            break;
-                        case 4:
-                            Manager.modifyAvailability(in);
-                            break;
-                        case 5:
-                            Manager.salesPerProduct(in);
-                            break;
-                        case 0 :
-                            break;
-                    }
-                }while (choice != 0);
-            }catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }else{
-            System.out.println("Now working in customer mode");
-            Customer customer = new Customer("aaa", "123", 37.9932963, 38.733413);
-            try{
-                int choice;
-                do {
-                    System.out.println("Choose action: ");
-                    System.out.println("1. Show nearby stores");
-                    System.out.println("2. Filter stores");
-                    System.out.println("3. Buy products");
-                    System.out.println("4. Rate store");
-                    System.out.println("0. Exit");
-                    choice = in.nextInt();
-                    System.out.println(choice);
-                    in.nextLine();
-                    switch (choice){
-                        case 1:
-                            customer.showNearbyStores();
-                            break;
-                        case 2:
-                            customer.filterStores(in);
-                            break;
-                        case 3:
-                            customer.buyProducts(in);
-                            break;
-                        case 4:
-                            customer.rateStore(in);
-                            break;
-                        case 0 :
-                            break;
-                    }
-                }while(choice!=0);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        do {
+            if (mode == 1) {
+                System.out.println("Now working in manager mode");
+                try {
+                    int choice;
+                    do {
+                        System.out.println("Choose action: ");
+                        System.out.println("1. Add store");
+                        System.out.println("2. Add product to store");
+                        System.out.println("3. Remove product from store");
+                        System.out.println("4. Update stock of product");
+                        System.out.println("5. Sales per product");
+                        System.out.println("0. Exit");
+                        choice = in.nextInt();
+                        System.out.println(choice);
+                        in.nextLine();
+                        switch (choice) {
+                            case 1:
+                                Manager.addStore(in);
+                                break;
+                            case 2:
+                                Manager.addProductToStore(in);
+                                break;
+                            case 3:
+                                Manager.removeProductFromStore(in);
+                                break;
+                            case 4:
+                                Manager.modifyAvailability(in);
+                                break;
+                            case 5:
+                                Manager.salesPerProduct(in);
+                                break;
+                            case 0:
+                                break;
+                        }
+                    } while (choice != 0);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else if (mode == 2) {
+                System.out.println("Now working in customer mode");
+                Customer customer = new Customer("aaa", "123", 37.9932963, 38.733413);
+                try {
+                    int choice;
+                    do {
+                        System.out.println("Choose action: ");
+                        System.out.println("1. Show nearby stores");
+                        System.out.println("2. Filter stores");
+                        System.out.println("3. Buy products");
+                        System.out.println("4. Rate store");
+                        System.out.println("0. Exit");
+                        choice = in.nextInt();
+                        System.out.println(choice);
+                        in.nextLine();
+                        switch (choice) {
+                            case 1:
+                                customer.showNearbyStores();
+                                break;
+                            case 2:
+                                customer.filterStores(in);
+                                break;
+                            case 3:
+                                customer.buyProducts(in);
+                                break;
+                            case 4:
+                                customer.rateStore(in);
+                                break;
+                            case 0:
+                                break;
+                        }
+                    } while (choice != 0);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
 
-        }
+            }
+            System.out.println("Choose mode: (1) manager, (2) client, (3) Exit");
+            mode = in.nextInt();
+        }while(mode != 3);
 
         in.close();
 

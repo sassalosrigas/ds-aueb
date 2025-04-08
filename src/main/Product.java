@@ -8,7 +8,8 @@ public class Product implements Serializable {
     String productName, productType;
     int availableAmount;
     double price;
-    boolean showOnline;
+    private boolean showOnline;
+    private int totalSales;
 
     public Product(@JsonProperty("ProductName") String productName,
                    @JsonProperty("ProductType") String productType,
@@ -18,19 +19,15 @@ public class Product implements Serializable {
         this.productType = productType;
         this.availableAmount = availableAmount;
         this.price = price;
-        this.showOnline = false;
+        this.showOnline = true;
     }
 
     public Product() {
     }
 
     @JsonIgnore
-    public boolean getOnline(){
-        return this.showOnline;
-    }
-
-    public void setOnline(boolean online){
-        this.showOnline = online;
+    public void setOnline(boolean showOnline){
+        this.showOnline = showOnline;
     }
 
     public String getProductName() {
@@ -63,5 +60,17 @@ public class Product implements Serializable {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public int getTotalSales() {
+        return totalSales;
+    }
+
+    public void addSales(int quantity) {
+        this.totalSales += quantity;
+    }
+
+    public boolean isOnline() {
+        return showOnline;
     }
 }

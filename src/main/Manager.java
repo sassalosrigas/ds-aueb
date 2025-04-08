@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Manager{
@@ -118,25 +119,44 @@ public class Manager{
     }
 
     public static void salesPerProduct(Scanner in){
-        try{
-            List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            System.out.println("Choose store to see sales per product:");
-            int counter = 1;
-            for(Store s: stores){
-                System.out.println(counter + ". " + s.getStoreName());
-                counter++;
-            }
+        try {
+            System.out.println("Choose Report Type");
+            System.out.println("1. Sales per product in a store");
+            System.out.println("2. Sales by product category");
+            System.out.println("3. Sales by shop category");
             int choice = in.nextInt();
-            Store currentStore = stores.get(choice-1);
-            for(Product p: currentStore.getProducts()){
-                System.out.println("Product name: "  + p.getProductName() + " Total sales: " + 0);
-            }
-            JsonHandler.writeStoreToJson(currentStore, "store.json");
+            in.nextLine(); // Consume newline
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            Socket socket = new Socket("localhost", 8080);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
+            out.flush();
+
+            switch (choice) {
+                case 1:
+                    System.out.println("Enter store name:");
+                    String storeName = in.nextLine();
+                    out.writeObject(new WorkerFunctions("PRODUCT_SALES", storeName));
+                    out.flush();
+                    Map<String, Integer> results = (Map<String, Integer>) inp.readObject();
+                    System.out.println("Sales for " +storeName+": ");
+                    results.forEach((product,sales)->
+                            System.out.printf("%-20s: %d%n", product, sales));
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+            }
+
+            out.close();
+            inp.close();
+            socket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
     public static void modifyAvailability(Scanner in){
         try{
             System.out.println("Give the store's name:");
