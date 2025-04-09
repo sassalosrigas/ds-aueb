@@ -163,19 +163,32 @@ public class Worker extends Thread {
         }
         return null;
     }
-    public synchronized  List<Store> filterStores(String category, double lower, double upper, String price) {
-        List<Store> stores = new ArrayList<>();
-        System.out.println(category);
-        System.out.println(lower);
-        System.out.println(upper);
-        System.out.println(price);
-        for(Store store : storeList){
-            if(store.getFoodCategory().equals(category) && store.getStars()>= lower && store.getStars()<= upper && store.getPriceCategory().equals(price)){
-                stores.add(store);
+
+    public List<Store> mapFilterStores(String category, double minRate, double maxRate, String priceCat) {
+            List<Store> results = new ArrayList<>();
+            for(Store store : storeList){
+                if(matchesFilter(store, category, minRate, maxRate, priceCat)) {
+                    results.add(store);
+                }
             }
-        }
-        return stores;
+            return results;
     }
+
+    public boolean matchesFilter(Store store, String category, double minRate, double maxRate, String priceCat) {
+        boolean result = true;
+        if (category != null && !store.getFoodCategory().equalsIgnoreCase(category)) {
+            return false;
+        }
+        if (store.getStars() < minRate || store.getStars() > maxRate) {
+            return false;
+        }
+        if (priceCat != null && !store.getPriceCategory().equalsIgnoreCase(priceCat)) {
+            return false;
+        }
+        return result;
+    }
+
+
 
     public void rateStore(Store store, int rating){
         for(Store s : storeList){

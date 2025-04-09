@@ -211,36 +211,6 @@ public class ActionForWorkers extends Thread{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }else if(operation.equals("SEARCH_STORES")) {
-                String foodCategory = request.getName();
-                double lowerStars = request.getDouble1();
-                double upperStars = request.getDouble2();
-                String priceCategory = request.getName2();
-                List<Store> stores = new ArrayList<Store>();
-                List<Thread> workerThreads = new ArrayList<>();
-                for(Worker worker: workers) {
-                    Thread t = new Thread(() -> {
-                        List<Store> workerStores = worker.filterStores(foodCategory, lowerStars, upperStars, priceCategory);
-                        synchronized(stores) {
-                            stores.addAll(workerStores);
-                        }
-                    });
-                    workerThreads.add(t);
-                    t.start();
-                }
-                for(Thread t : workerThreads) {
-                    try {
-                        t.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                try {
-                    out.writeObject(stores);
-                    out.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }else if(operation.equals("BUY_PRODUCT")) {
                 Product product = (Product)request.getObject();
                 Store store = (Store)request.getObject2();
@@ -259,16 +229,16 @@ public class ActionForWorkers extends Thread{
             }else if(operation.equals("SHOW_ALL_STORES")) {
                 List<Store> stores = new ArrayList<Store>();
                 List<Thread> workerThreads = new ArrayList<>();
-                for(Worker worker: workers) {
+                for (Worker worker : workers) {
                     Thread t = new Thread(() -> {
-                        synchronized(stores) {
+                        synchronized (stores) {
                             stores.addAll(worker.showAllStores());
                         }
                     });
                     workerThreads.add(t);
                     t.start();
                 }
-                for(Thread t : workerThreads) {
+                for (Thread t : workerThreads) {
                     try {
                         t.join();
                     } catch (InterruptedException e) {
@@ -281,6 +251,14 @@ public class ActionForWorkers extends Thread{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }else if (operation.equals("FILTER_STORES")) {
+                String foodCategory = request.getName();
+                double lowerStars = request.getDouble1();
+                double upperStars = request.getDouble2();
+                String priceCategory = request.getName2();
+
+                List<Store> results = master.filterStores(foodCategory, lowerStars, upperStars, priceCategory);
+                out.writeObject(results);
             }else if(operation.equals("APPLY_RATING")){
                 Store store = (Store)request.getObject();
                 int rating = request.getNum();

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Master{
     ServerSocket serverSocket;
@@ -119,4 +120,12 @@ public class Master{
         }
         return results;
     }
+
+    public List<Store> filterStores(String category, double minRate, double maxRate, String priceCat) {
+        List<Store> mappedResults = workers.parallelStream().flatMap(worker -> worker.mapFilterStores(
+                category, minRate, maxRate, priceCat
+        ).stream()).collect(Collectors.toList());
+        return mappedResults.stream().distinct().collect(Collectors.toList());
+    }
+
 }
