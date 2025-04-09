@@ -156,16 +156,6 @@ public class Worker extends Thread {
         return stores;
     }
 
-    public List<Store> mapFilterStores(String category, double lower, double upper, String price) {
-        List<Store> results = new ArrayList<>();
-        for (Store store : storeList) {
-            if (store.matchesCriteria(category, lower, upper, price)) {
-                results.add(store);
-            }
-        }
-        return results;
-    }
-
     public void rateStore(Store store, int rating){
         for(Store s : storeList){
             if(s.getStoreName().equals(store.getStoreName())){

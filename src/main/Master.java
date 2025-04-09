@@ -85,14 +85,4 @@ public class Master{
         }
         return results;
     }
-
-    public List<Store> filterStores(MapReduceRequest request){
-        List<Store> mappredResults = workers.parallelStream()
-                .flatMap(worker -> worker.mapFilterStores(
-                        request.getFoodCategory(),
-                        request.getStars(),
-                        request.getPriceCategory()).stream())
-                .collect(Collectors.toList());
-        return mappredResults;
-    }
 }
