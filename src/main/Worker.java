@@ -14,28 +14,31 @@ public class Worker extends Thread {
         this.workerId = workerId;
     }
 
-
-    public List<Store> getStores() {
-        return storeList;
-    }
+    private boolean running = true;
 
     @Override
     public void run() {
-        while(true) {
+        while(running) {
             synchronized (this) {
-                while(task == null) {
+                while(task == null && running) {
                     try {
                         wait();
                     } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                        Thread.currentThread().interrupt();
+                        return;
                     }
                 }
-                task.run();
-                task = null;
+                if (!running) break;
+                try {
+                    task.run();
+                } catch (Exception e) {
+                    System.err.println("Error running worker " + workerId);
+                } finally {
+                    task = null;
+                }
             }
         }
     }
-
     public synchronized void receiveTask(Runnable task) {
         this.task = task;
         notify();

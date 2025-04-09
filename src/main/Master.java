@@ -1,24 +1,58 @@
 package main;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Master{
     ServerSocket serverSocket;
     Socket socket;
-    private final List<Worker> workers = Collections.synchronizedList(new ArrayList<Worker>());
+    private final List<Worker> workers;
+    private Properties config;
 
     public Master(){
-        for(int i=0;i<10;i++){
+        this.workers = Collections.synchronizedList(new ArrayList<Worker>());
+        this.config = new Properties();
+
+        try (InputStream input = new FileInputStream("src/main/config.properties")) {
+            config.load(input);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int workerCount = Integer.parseInt(config.getProperty("workerCount"));
+        for (int i = 0; i < workerCount; i++) {
             Worker worker = new Worker(i);
             worker.start();
             workers.add(worker);
         }
     }
 
-    public static void main(String[] args) {
+    public Master(int workerCount) {
+        this.workers = Collections.synchronizedList(new ArrayList<>());
+        for (int i = 0; i < workerCount; i++) {
+            Worker worker = new Worker(i);
+            worker.start();
+            workers.add(worker);
+            System.out.println("Initialized Worker " + i);
+        }
+    }
 
-        new Master().openServer();
+    public static void main(String[] args) {
+        Master master;
+        if (args.length > 0) {
+            try {
+                int workerCount = Integer.parseInt(args[0]);
+                master = new Master(workerCount);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                master = new Master();
+            }
+        } else {
+            master = new Master();
+        }
+        master.openServer();
     }
 
     void openServer() {

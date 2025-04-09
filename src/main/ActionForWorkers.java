@@ -3,13 +3,14 @@ package main;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ActionForWorkers extends Thread{
     ObjectInputStream in;
     ObjectOutputStream out;
-    private final List<Worker> workers;
+    private List<Worker> workers;
     private final Master master;
 
     public ActionForWorkers(Socket connection, List<Worker> workers, Master master) {
