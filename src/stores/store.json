@@ -1,6 +1,6 @@
 {
   "storeName" : "PizzaLab",
-  "foodCategory" : "pizzeria",
+  "foodCategory" : "Pizza",
   "storeLogo" : "src/stores/pizzalab.png",
   "latitude" : 37.990261,
   "longitude" : 23.739935,
@@ -8,23 +8,28 @@
   "stars" : 3,
   "products" : [ {
     "productName" : "Margherita",
-    "productType" : "pizza",
+    "productType" : "Pizza",
     "availableAmount" : 2000,
     "price" : 9.2
   }, {
     "productName" : "Special",
-    "productType" : "pizza",
+    "productType" : "Pizza",
     "availableAmount" : 1000,
     "price" : 12.0
   }, {
     "productName" : "Chef’s Salad",
-    "productType" : "salad",
+    "productType" : "Salad",
     "availableAmount" : 1000,
     "price" : 5.0
   }, {
     "productName" : "Greek",
-    "productType" : "pizza",
+    "productType" : "Pizza",
     "availableAmount" : 900,
     "price" : 8.0
-  } ]
+  }, {
+    "productName" : "Coca-Cola Zero",
+    "productType" : "Drink",
+    "availableAmount" : 1000,
+    "price" : 2.5
+  }]
 }

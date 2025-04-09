@@ -1,6 +1,6 @@
 {
   "storeName" : "Souvlaki Kir Babis",
-  "foodCategory" : "souvlakeri",
+  "foodCategory" : "Psitopolio",
   "storeLogo" : "/usr/bin/images/storeLogo.png",
   "latitude" : 37.994117,
   "longitude" : 23.732338,
@@ -8,22 +8,22 @@
   "noOfVotes" : 15,
   "products" : [ {
     "productName" : "Gyros Kotopoulo se Pita",
-    "productType" : "pita",
+    "productType" : "Tylixto",
     "availableAmount" : 1500,
     "price" : 3.0
   }, {
     "productName" : "Vergina",
-    "productType" : "beer",
+    "productType" : "Drink",
     "availableAmount" : 500,
     "price" : 2.0
   }, {
     "productName" : "Kotompeikon se Pita",
-    "productType" : "pita",
+    "productType" : "Tylixto",
     "availableAmount" : 1000,
     "price" : 2.0
   }, {
     "productName" : "Pansetakia",
-    "productType" : "mprizola",
+    "productType" : "Psito",
     "availableAmount" : 4,
     "price" : 5.0
   } ]
