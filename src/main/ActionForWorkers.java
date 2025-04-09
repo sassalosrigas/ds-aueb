@@ -175,13 +175,17 @@ public class ActionForWorkers extends Thread{
             }else if(operation.equals("BUY_PRODUCT")) {
                 Product product = (Product)request.getObject();
                 Store store = (Store)request.getObject2();
-                int quantity = (Integer) request.getNum();
+                int quantity = request.getNum();
                 int assign = Master.hashToWorker(store.getStoreName(), workers.size());
                 Worker worker = workers.get(assign);
                 worker.receiveTask(() -> {
-                    worker.buyProduct(store, product, quantity);
+                    boolean completed = worker.buyProduct(store, product, quantity);
                     try{
-                        out.writeObject(store);
+                        if(completed){
+                            out.writeObject(store);
+                        }else{
+                            out.writeObject("There isn't enough available quantity");
+                        }
                         out.flush();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -236,6 +240,59 @@ public class ActionForWorkers extends Thread{
             }else if (operation.equals("SHOP_CATEGORY_SALES")) {
                 Map<String, Integer> results = this.master.aggregateShopCategorySales();
                 out.writeObject(results);
+            }else if(operation.equals("RESERVE_PRODUCT")){
+                Store store = (Store)request.getObject2();
+                Product product = (Product) request.getObject();
+                int quantity = request.getNum();
+                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
+                Worker worker = workers.get(assign);
+                worker.receiveTask(() -> {
+                    boolean reserved = worker.reserveProduct(store, product, quantity);
+                    try{
+                        if(reserved){
+                            out.writeObject("Reserved successfully");
+                        }else{
+                            out.writeObject("Reservation failed");
+                        }
+                        out.flush();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }else if(operation.equals("COMPLETE_PURCHASE")){
+                Store store = (Store)request.getObject();
+                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
+                Worker worker = workers.get(assign);
+                worker.receiveTask(() -> {
+                    boolean completed = worker.commitPurchase(store.getStoreName());
+                    try {
+                        if (completed) {
+                            out.writeObject("Purchase successful");
+                        } else {
+                            out.writeObject("Purchase failed");
+                        }
+                        out.flush();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }else if(operation.equals("ROLLBACK_PURCHASE")){
+                Store store = (Store)request.getObject();
+                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
+                Worker worker = workers.get(assign);
+                worker.receiveTask(() -> {
+                    boolean reverted = worker.rollbackPurchase(store.getStoreName());
+                    try {
+                        if(reverted){
+                            out.writeObject("Revert successful");
+                        }else{
+                            out.writeObject("Revert unsuccessful");
+                        }
+                        out.flush();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
         }catch(Exception e){
             e.printStackTrace();

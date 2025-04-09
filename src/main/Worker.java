@@ -5,11 +5,14 @@ import java.net.*;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Worker extends Thread {
     private final int workerId;
     private List<Store> storeList = new ArrayList<>();
     private Runnable task = null;
+    private final Map<String, List<PendingPurchase>> pendingPurchases = new ConcurrentHashMap<>();
     public Worker(int workerId) {
         this.workerId = workerId;
     }
@@ -19,6 +22,16 @@ public class Worker extends Thread {
         return storeList;
     }
 
+    private static class PendingPurchase{
+        String productName;
+        int quantity;
+
+        PendingPurchase(String productName, int quantity) {
+            this.productName = productName;
+            this.quantity = quantity;
+        }
+
+    }
     @Override
     public void run() {
         while(true) {
@@ -71,24 +84,96 @@ public class Worker extends Thread {
         return false;
     }
 
-    public synchronized void buyProduct(Store store, Product product, int quantity) {
+    public synchronized boolean buyProduct(Store store, Product product, int quantity) {
         for(Store s: storeList){
             if(s.getStoreName().equals(store.getStoreName())){
                 for(Product p : s.getProducts()){
                     if(p.getProductName().equals(product.getProductName())){
-                        if(product.getAvailableAmount() >= quantity){
-                            product.setAvailableAmount(product.getAvailableAmount() - quantity);
-                            product.addSales(quantity);
-                            if (product.getAvailableAmount() == 0) {
-                                product.setOnline(false);
+                        synchronized(p){
+                            if(p.getAvailableAmount() >= quantity){
+                                p.setAvailableAmount(p.getAvailableAmount() - quantity);
+                                p.addSales(quantity);
+                                if (p.getAvailableAmount() == 0) {
+                                    p.setOnline(false);
+                                }
+                                return true;
                             }
-                            return;
                         }
                     }
                 }
             }
         }
+        return false;
     }
+
+    public synchronized boolean reserveProduct(Store store, Product product, int quantity) {
+        for(Product p : store.getProducts()){
+            if(p.getProductName().equals(product.getProductName())){
+                synchronized(p){
+                    if(p.getAvailableAmount() >= quantity){
+                        p.setAvailableAmount(p.getAvailableAmount() - quantity);
+                        pendingPurchases
+                                .computeIfAbsent(store.getStoreName(), k -> new ArrayList<>())
+                                .add(new PendingPurchase(product.getProductName(), quantity));
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean rollbackPurchase(String storeName) {
+        List<PendingPurchase> pending = pendingPurchases.get(storeName);
+        if (pending == null) return false;
+
+        Store store = getStore(storeName);
+        if (store == null) return false;
+
+        for (PendingPurchase pp : pending) {
+            for (Product p : store.getProducts()) {
+                if (p.getProductName().equals(pp.productName)) {
+                    synchronized (p) {
+                        p.setAvailableAmount(p.getAvailableAmount() + pp.quantity);
+                        if (p.getAvailableAmount() > 0 && !p.isOnline()) {
+                            p.setOnline(true);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        pendingPurchases.remove(storeName);
+        return true;
+    }
+
+    public synchronized boolean commitPurchase(String storeName) {
+        List<PendingPurchase> pending = pendingPurchases.get(storeName);
+        if (pending == null) return false;
+
+        Store store = getStore(storeName);
+        if (store == null) return false;
+
+        for (PendingPurchase pp : pending) {
+            for (Product p : store.getProducts()) {
+                if (p.getProductName().equals(pp.productName)) {
+                    synchronized (p) {
+                        p.addSales(pp.quantity);
+
+                        if (p.getAvailableAmount() == 0) {
+                            p.setOnline(false);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        pendingPurchases.remove(storeName);
+        return true;
+    }
+
 
     public synchronized void modifyStock(String storeName, String productName, int quantity) {
         if(hasStore(storeName) && hasProduct(storeName, productName)){
@@ -109,7 +194,6 @@ public class Worker extends Thread {
             if(s.equals(store)){
                 for(Product p : s.getProducts()){
                     if(p.getProductName().equals(product.getProductName())){
-                        System.out.println("eii");
                         if(!p.isOnline()){
                             p.setOnline(true);
                         }

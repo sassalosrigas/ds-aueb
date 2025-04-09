@@ -7,11 +7,22 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Customer implements Serializable {
     private String username,password;
     private double longitude,latitude;
+
+    private static class ProductOrder {
+        final String productName;
+        final int quantity;
+
+        ProductOrder(String productName, int quantity) {
+            this.productName = productName;
+            this.quantity = quantity;
+        }
+    }
 
     public Customer(String username, String password, double latitude, double longitude){
         this.username = username;
@@ -65,28 +76,49 @@ public class Customer implements Serializable {
                 int choice = input.nextInt();
                 if(choice >= 1 && choice <= ((ArrayList<?>) response).size()){
                     Store store = ((ArrayList<Store>) response).get(choice-1);
-                    while(true){
-                        counter = 1;
+                    List<ProductOrder> cart = new ArrayList<>();
+                    boolean purchasing = true;
+                    while(purchasing){
                         System.out.println("Choose product");
+                        ArrayList<Product> products = new ArrayList<>();
                         for(Product product : store.getProducts()){
                             if (product.isOnline()) {
-                                System.out.println(counter + ". " + product.getProductName());
-                                counter++;
-                            }    
+                                products.add(product);
+                            }
                         }
+                        counter = 1;
+                        for(Product product : products){
+                            System.out.println(counter + ". " + product.getProductName());
+                            counter++;
+                        }
+                        System.out.println(counter + ". " + "Quit order");
                         System.out.println("0. Complete purchase");
                         choice = input.nextInt();
-                        if(choice >= 1 && choice <= store.getProducts().size()){
+                        if(choice >= 1 && choice <= products.size()){
                             System.out.println("Choose quantity");
                             int quantity = input.nextInt();
-                            out.writeObject(new WorkerFunctions("BUY_PRODUCT", store.getProducts().get(choice-1),store, quantity));
+                            out.writeObject(new WorkerFunctions("RESERVE_PRODUCT", products.get(choice-1),store, quantity));
                             out.flush();
                             Object response2 = in.readObject();
-                            if(response2 instanceof Store){
-                                store = (Store) response2;
+                            if(response2 instanceof String) {
+                                System.out.println("Server response: " + response2);
                             }
+                        }else if(choice == 0){
+                            out.writeObject(new WorkerFunctions("COMPLETE_PURCHASE", store));
+                            out.flush();
+                            response = (String) in.readObject();
+                            if(response.equals("Purchase successful")){
+                                System.out.println("Purchase completed");
+                            }else{
+                                System.out.println("Purchase failed");
+                            }
+                            purchasing = false;
                         }else{
-                            break;
+                            out.writeObject(new WorkerFunctions("ROLLBACK_PURCHASE", store));
+                            out.flush();
+                            response = (String) in.readObject();
+                            System.out.println("Order cancelled");
+                            purchasing = false;
                         }
                     }
                     out.close();
