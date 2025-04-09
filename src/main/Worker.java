@@ -76,7 +76,7 @@ public class Worker extends Thread {
                     if(p.getProductName().equals(product.getProductName())){
                         if(product.getAvailableAmount() >= quantity){
                             product.setAvailableAmount(product.getAvailableAmount() - quantity);
-                            product.addSales(quantity);
+                            p.addSales(quantity);
                             if (product.getAvailableAmount() == 0) {
                                 product.setOnline(false);
                             }
