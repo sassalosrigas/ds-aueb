@@ -126,6 +126,6 @@ public class Store implements Serializable {
         return Objects.hash(storeName, latitude, longitude);
     }
 
-    public matchesCriteria()
+    //public matchesCriteria()
 
 }

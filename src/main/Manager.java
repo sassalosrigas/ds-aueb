@@ -121,7 +121,7 @@ public class Manager{
                     }
                     int choice = input.nextInt();
                     if(choice >= 1 && choice <= stores.size()){
-                        Store store = stores.get(choice);
+                        Store store = stores.get(choice-1);
                         input.nextLine();
                         Product product = addProduct(input);
                         out.writeObject(new WorkerFunctions("ADD_PRODUCT",store, product));

@@ -98,7 +98,6 @@ public class Worker extends Thread {
                     product.availableAmount = quantity;
                 }
             }
-            JsonHandler.writeStoreToJson(store, store.getFilepath());
             System.out.println("Changed product " + productName + " from store " + store.getStoreName());
         }else{
             System.out.println("Product does not exist");
@@ -109,8 +108,11 @@ public class Worker extends Thread {
         for(Store s : storeList){
             if(s.equals(store)){
                 for(Product p : s.getProducts()){
-                    if(p.getProductName().equals(product.getProductName()) && !p.isOnline()){
-                        p.setOnline(true);
+                    if(p.getProductName().equals(product.getProductName())){
+                        System.out.println("eii");
+                        if(!p.isOnline()){
+                            p.setOnline(true);
+                        }
                         return true;
                     }
                 }
@@ -156,6 +158,7 @@ public class Worker extends Thread {
         return stores;
     }
 
+    /*
     public List<Store> mapFilterStores(String category, double lower, double upper, String price) {
         List<Store> results = new ArrayList<>();
         for (Store store : storeList) {
@@ -166,6 +169,8 @@ public class Worker extends Thread {
         return results;
     }
 
+
+     */
     public void rateStore(Store store, int rating){
         for(Store s : storeList){
             if(s.getStoreName().equals(store.getStoreName())){

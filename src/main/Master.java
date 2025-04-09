@@ -28,7 +28,6 @@ public class Master{
                 serverSocket = new ServerSocket(8080);
                 while (true) {
                     socket = serverSocket.accept();
-                    System.out.println("ou mpoi");
                     Thread t = new ActionForWorkers(socket, workers, this);
                     t.start();
                 }
@@ -86,6 +85,7 @@ public class Master{
         return results;
     }
 
+    /*
     public List<Store> filterStores(MapReduceRequest request){
         List<Store> mappredResults = workers.parallelStream()
                 .flatMap(worker -> worker.mapFilterStores(
@@ -95,4 +95,6 @@ public class Master{
                 .collect(Collectors.toList());
         return mappredResults;
     }
+
+     */
 }
