@@ -1,6 +1,7 @@
 package main;
 import java.net.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Master{
     ServerSocket serverSocket;
@@ -83,5 +84,15 @@ public class Master{
             results.merge(entry.getKey(), entry.getValue(), Integer::sum);
         }
         return results;
+    }
+
+    public List<Store> filterStores(MapReduceRequest request){
+        List<Store> mappredResults = workers.parallelStream()
+                .flatMap(worker -> worker.mapFilterStores(
+                        request.getFoodCategory(),
+                        request.getStars(),
+                        request.getPriceCategory()).stream())
+                .collect(Collectors.toList());
+        return mappredResults;
     }
 }
