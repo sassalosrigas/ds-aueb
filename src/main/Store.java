@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 public class Store implements Serializable {
     private String storeName, foodCategory, storeLogo;
@@ -102,5 +103,26 @@ public class Store implements Serializable {
 
     public List<Product> getProducts() { return products; }
     public void setProducts(List<Product> products) { this.products = products; }
-    
+
+    @Override
+    public boolean equals(Object o) {
+        // 1. Check if it's the same object reference
+        if (this == o) return true;
+
+        // 2. Check if the object is null or of a different class
+        if (o == null || getClass() != o.getClass()) return false;
+
+        // 3. Cast the object to Store
+        Store store = (Store) o;
+
+        // 4. Compare the defining fields
+        return Double.compare(store.latitude, latitude) == 0 &&
+                Double.compare(store.longitude, longitude) == 0 &&
+                storeName.equals(store.storeName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(storeName, latitude, longitude);
+    }
 }

@@ -50,9 +50,13 @@ public class ActionForWorkers extends Thread{
                 int assign = Master.hashToWorker(store.getStoreName(), workers.size());
                 Worker worker = workers.get(assign);
                 worker.receiveTask(() -> {
-                    worker.addStore(store);
+                    boolean added = worker.addStore(store);
                     try {
-                        out.writeObject(store);
+                        if(added){
+                            out.writeObject(store);
+                        }else{
+                            out.writeObject("Store is already registered");
+                        }
                         out.flush();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -66,24 +70,31 @@ public class ActionForWorkers extends Thread{
                 int assign = Master.hashToWorker(storeName, workers.size());
                 Worker worker = workers.get(assign);
                 worker.receiveTask(() -> {
-                    worker.addProduct(storeName, product);
+                    boolean added = worker.addProduct(storeName, product);
                     try {
-                        out.writeObject(product);
+                        if(added){
+                            out.writeObject(product);
+                        }else{
+                            out.writeObject("Product is already registered");
+                        }
                         out.flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 });
             } else if(operation.equals("REMOVE_PRODUCT")) {
-                String storeName = request.getName();
-                System.out.println("Current store " + storeName);
-                String productName = request.getName2();
-                int assign = Master.hashToWorker(storeName, workers.size());
+                Store store = (Store) request.getObject();
+                Product product = (Product) request.getObject2();
+                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
                 Worker worker = workers.get(assign);
                 worker.receiveTask(() -> {
-                    worker.removeProduct(storeName, productName);
+                    boolean removed = worker.removeProduct(store, product);
                     try {
-                        out.writeObject(storeName);
+                        if(removed){
+                            out.writeObject("Removed product " + product.getProductName() +  " from " + store.getStoreName());
+                        }else{
+                            out.writeObject("Product is already offline");
+                        }
                         out.flush();
                     } catch (IOException e) {
                         e.printStackTrace();

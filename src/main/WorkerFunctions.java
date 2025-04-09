@@ -15,6 +15,12 @@ public class WorkerFunctions implements Serializable {
         this.object = object;
     }
 
+    public WorkerFunctions(String operation, Object object, Object object2) {
+        this.operation = operation;
+        this.object = object;
+        this.object2 = object2;
+    }
+
     public WorkerFunctions(String operation, String name, double double1, double double2, String name2) {
         this.operation = operation;
         this.name = name;

@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Customer implements Serializable {
@@ -25,10 +24,10 @@ public class Customer implements Serializable {
         try{
             Socket socket = new Socket("localhost", 8080);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             out.writeObject(new WorkerFunctions("SHOW_STORES", this));
             out.flush();
-            Object response = inp.readObject();
+            Object response = in.readObject();
             if(response instanceof ArrayList){
                 System.out.println("Server response: ");
                 for(Store store : (ArrayList<Store>)response){
@@ -36,7 +35,7 @@ public class Customer implements Serializable {
                 }
             }
             out.close();
-            inp.close();
+            in.close();
             socket.close();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
@@ -47,14 +46,14 @@ public class Customer implements Serializable {
         }
     }
 
-    public void buyProducts(Scanner in){
+    public void buyProducts(Scanner input){
         try{
             Socket socket = new Socket("localhost", 8080);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             out.writeObject(new WorkerFunctions("SHOW_STORES", this));
             out.flush();
-            Object response = inp.readObject();
+            Object response = in.readObject();
             if(response instanceof ArrayList){
                 System.out.println("Server response: ");
                 int counter = 1;
@@ -63,7 +62,7 @@ public class Customer implements Serializable {
                     counter++;
                 }
                 System.out.println("Choose store");
-                int choice = in.nextInt();
+                int choice = input.nextInt();
                 if(choice >= 1 && choice <= ((ArrayList<?>) response).size()){
                     Store store = ((ArrayList<Store>) response).get(choice-1);
                     while(true){
@@ -76,13 +75,13 @@ public class Customer implements Serializable {
                             }    
                         }
                         System.out.println("0. Complete purchase");
-                        choice = in.nextInt();
+                        choice = input.nextInt();
                         if(choice >= 1 && choice <= store.getProducts().size()){
                             System.out.println("Choose quantity");
-                            int quantity = in.nextInt();
+                            int quantity = input.nextInt();
                             out.writeObject(new WorkerFunctions("BUY_PRODUCT", store.getProducts().get(choice-1),store, quantity));
                             out.flush();
-                            Object response2 = inp.readObject();
+                            Object response2 = in.readObject();
                             if(response2 instanceof Store){
                                 store = (Store) response2;
                             }
@@ -91,7 +90,7 @@ public class Customer implements Serializable {
                         }
                     }
                     out.close();
-                    inp.close();
+                    in.close();
                     socket.close();
                 }
             }

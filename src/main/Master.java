@@ -46,6 +46,7 @@ public class Master{
     public static int hashToWorker(String storeName, int numOfWorkers) {
         return Math.abs(storeName.hashCode()) % numOfWorkers;
     }
+
 //trying mapreduce
     public Map<String, Integer> aggregateProductSales(String storeName) {
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();

@@ -3,6 +3,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Product implements Serializable {
     String productName, productType;
@@ -72,5 +73,19 @@ public class Product implements Serializable {
 
     public boolean isOnline() {
         return showOnline;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return productName.equals(product.productName) &&
+                productType.equals(product.productType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(productName, productType);
     }
 }

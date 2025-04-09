@@ -10,21 +10,25 @@
     "productName" : "Gyros Kotopoulo se Pita",
     "productType" : "pita",
     "availableAmount" : 1500,
-    "price" : 3.0
+    "price" : 3.0,
+    "totalSales" : 0
   }, {
     "productName" : "Vergina",
     "productType" : "beer",
     "availableAmount" : 500,
-    "price" : 2.0
+    "price" : 2.0,
+    "totalSales" : 0
   }, {
     "productName" : "Kotompeikon se Pita",
     "productType" : "pita",
     "availableAmount" : 1000,
-    "price" : 2.0
+    "price" : 2.0,
+    "totalSales" : 0
   }, {
     "productName" : "Pansetakia",
     "productType" : "mprizola",
     "availableAmount" : 4,
-    "price" : 5.0
-  } ]
+    "price" : 5.0,
+    "totalSales" : 0
+  }]
 }

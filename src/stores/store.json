@@ -4,27 +4,31 @@
   "storeLogo" : "src/stores/pizzalab.png",
   "latitude" : 37.9932963,
   "longitude" : 23.733413,
+  "stars" : 3.0,
   "noOfVotes" : 15,
-  "stars" : 3,
   "products" : [ {
     "productName" : "Margherita",
     "productType" : "pizza",
     "availableAmount" : 2000,
-    "price" : 9.2
+    "price" : 9.2,
+    "totalSales" : 0
   }, {
     "productName" : "Special",
     "productType" : "pizza",
     "availableAmount" : 1000,
-    "price" : 12.0
+    "price" : 12.0,
+    "totalSales" : 0
   }, {
     "productName" : "Chef’s Salad",
     "productType" : "salad",
     "availableAmount" : 1000,
-    "price" : 5.0
+    "price" : 5.0,
+    "totalSales" : 0
   }, {
     "productName" : "Greek",
     "productType" : "pizza",
     "availableAmount" : 900,
-    "price" : 8.0
+    "price" : 8.0,
+    "totalSales" : 0
   } ]
 }
