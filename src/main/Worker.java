@@ -76,11 +76,11 @@ public class Worker extends Thread {
             if(s.getStoreName().equals(store.getStoreName())){
                 for(Product p : s.getProducts()){
                     if(p.getProductName().equals(product.getProductName())){
-                        if(product.getAvailableAmount() >= quantity){
-                            product.setAvailableAmount(product.getAvailableAmount() - quantity);
-                            product.addSales(quantity);
-                            if (product.getAvailableAmount() == 0) {
-                                product.setOnline(false);
+                        if(p.getAvailableAmount() >= quantity){
+                            p.setAvailableAmount(product.getAvailableAmount() - quantity);
+                            p.addSales(quantity);
+                            if (p.getAvailableAmount() == 0) {
+                                p.setOnline(false);
                             }
                             return;
                         }
