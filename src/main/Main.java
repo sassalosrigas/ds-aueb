@@ -24,7 +24,7 @@ public class Main {
                         System.out.println("2. Add product to store");
                         System.out.println("3. Remove product from store");
                         System.out.println("4. Update stock of product");
-                        System.out.println("5. Sales per product");
+                        System.out.println("5. Statistics");
                         System.out.println("0. Exit");
                         choice = in.nextInt();
                         System.out.println(choice);

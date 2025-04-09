@@ -218,5 +218,31 @@ public class Worker extends Thread {
         return results;
     }
 
+    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales() {
+        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
+        for (Store store : storeList) {
+            for (Product product : store.getProducts()) {
+                results.add(new AbstractMap.SimpleEntry<>(
+                        product.getProductType(),
+                        product.getTotalSales()
+                ));
+            }
+        }
+        return results;
+    }
+
+    public List<AbstractMap.SimpleEntry<String, Integer>> mapShopCategorySales() {
+        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
+        for (Store store : storeList) {
+            for (Product product : store.getProducts()) {
+                results.add(new AbstractMap.SimpleEntry<>(
+                        store.getFoodCategory(),
+                        product.getTotalSales()
+                ));
+            }
+        }
+        return results;
+    }
+
 }
 

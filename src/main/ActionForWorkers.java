@@ -219,6 +219,12 @@ public class ActionForWorkers extends Thread{
                 String storeName = (String) request.getName();
                 Map<String, Integer> results = this.master.aggregateProductSales(storeName);
                 out.writeObject(results);
+            }else if (operation.equals("PRODUCT_CATEGORY_SALES")) {
+                Map<String, Integer> results = this.master.aggregateProductCategorySales();
+                out.writeObject(results);
+            }else if (operation.equals("SHOP_CATEGORY_SALES")) {
+                Map<String, Integer> results = this.master.aggregateShopCategorySales();
+                out.writeObject(results);
             }
         }catch(Exception e){
             e.printStackTrace();
