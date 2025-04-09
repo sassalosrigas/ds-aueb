@@ -44,6 +44,24 @@ public class Worker extends Thread {
         notify();
     }
 
+    public synchronized List<Store> getAllStores() {
+        return new ArrayList<>(storeList);
+    }
+
+    public synchronized void clearStores() {
+        storeList.clear();
+    }
+
+    public synchronized void addStores(List<Store> stores) {
+        storeList.addAll(stores);
+        storeList.forEach(Store::calculatePriceCategory);
+    }
+
+    public void shutdown() {
+        this.running = false;
+        this.notifyAll();
+    }
+
     public synchronized boolean addStore(Store store) {
         if(store!=null && !storeList.contains(store)) {
             storeList.add(store);
@@ -251,6 +269,5 @@ public class Worker extends Thread {
         }
         return results;
     }
-
 }
 
