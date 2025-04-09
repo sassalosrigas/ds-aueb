@@ -1,7 +1,7 @@
 {
   "storeName" : "Souvlaki Kir Babis",
   "foodCategory" : "Psitopolio",
-  "storeLogo" : "/usr/bin/images/storeLogo.png",
+  "storeLogo" : "src/stores/kirbabis.png",
   "latitude" : 37.994117,
   "longitude" : 23.732338,
   "stars" : 3.0,
