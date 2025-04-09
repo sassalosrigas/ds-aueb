@@ -64,18 +64,18 @@ public class ActionForWorkers extends Thread{
                 });
             }else if(operation.equals("ADD_PRODUCT")) {
                 System.out.println("product");
-                Product product = (Product)request.getObject();
-                String storeName = request.getName();
-                System.out.println("Current store " + storeName);
-                int assign = Master.hashToWorker(storeName, workers.size());
+                Store store = (Store) request.getObject();
+                Product product = (Product)request.getObject2();
+                System.out.println("Current store " + store.getStoreName());
+                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
                 Worker worker = workers.get(assign);
                 worker.receiveTask(() -> {
-                    boolean added = worker.addProduct(storeName, product);
+                    boolean existed = worker.addProduct(store, product);
                     try {
-                        if(added){
-                            out.writeObject(product);
+                        if(existed){
+                            out.writeObject("Product " + product.getProductName() + " was set online");
                         }else{
-                            out.writeObject("Product is already registered");
+                            out.writeObject("Product " + product.getProductName() + " was registered successfully");
                         }
                         out.flush();
                     } catch (IOException e) {

@@ -41,11 +41,13 @@ public class Worker extends Thread {
         notify();
     }
 
-    public synchronized void addStore(Store store) {
+    public synchronized boolean addStore(Store store) {
         if(store!=null && !storeList.contains(store)) {
             storeList.add(store);
             store.calculatePriceCategory();
+            return true;
         }
+        return false;
     }
 
     public boolean hasStore(String storeName) {
@@ -103,30 +105,33 @@ public class Worker extends Thread {
         }
     }
 
-    public synchronized void addProduct(String storeName, Product product) {
-        if(hasStore(storeName)){
-            Store store = getStore(storeName);
-            store.getProducts().add(product);
-            JsonHandler.writeStoreToJson(store, store.getFilepath());
-            System.out.println("Added product " + product.getProductName() + " to store " + store.getStoreName());
-        }else{
-            System.out.println("Store does not exist");
+    public synchronized boolean addProduct(Store store, Product product) {
+        for(Store s : storeList){
+            if(s.equals(store)){
+                for(Product p : s.getProducts()){
+                    if(p.getProductName().equals(product.getProductName()) && !p.isOnline()){
+                        p.setOnline(true);
+                        return true;
+                    }
+                }
+                s.getProducts().add(product);
+            }
         }
+        return false;
     }
 
-    public synchronized void removeProduct(String storeName, String productName) {
-        if(hasStore(storeName) && hasProduct(storeName, productName)){
-            Store store = getStore(storeName);
-            for(Product product : store.getProducts()){
-                if(product.getProductName().equals(productName)){
-                    product.setOnline(false);
+    public synchronized boolean removeProduct(Store store, Product product) {
+        for(Store s : storeList){
+            if(s.equals(store)){
+                for(Product p: s.getProducts()){
+                    if(p.getProductName().equals(product.getProductName())){
+                        p.setOnline(false);
+                        return true;
+                    }
                 }
             }
-            JsonHandler.writeStoreToJson(store, store.getFilepath());
-            System.out.println("Removed product " + productName + " from store " + store.getStoreName());
-        }else{
-            System.out.println("Product does not exist");
         }
+        return false;
     }
 
     public Store getStore(String storeName) {
@@ -203,7 +208,7 @@ public class Worker extends Thread {
         return distance <= 5.0;
     }
 
-    //trying mapreduce
+
     public List<AbstractMap.SimpleEntry<String, Integer>> mapProductSales(String storeName) {
         List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
         Store store = getStore(storeName);

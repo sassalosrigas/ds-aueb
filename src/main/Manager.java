@@ -124,7 +124,7 @@ public class Manager{
                         Store store = stores.get(choice);
                         input.nextLine();
                         Product product = addProduct(input);
-                        out.writeObject(new WorkerFunctions("ADD_PRODUCT",store.getStoreName(), product));
+                        out.writeObject(new WorkerFunctions("ADD_PRODUCT",store, product));
                         out.flush();
                         Object response2 = in.readObject();
                         if(response2 instanceof Product){
@@ -179,7 +179,7 @@ public class Manager{
                 case 2:
                     out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES"));
                     out.flush();
-                    Map<String, Integer> productCatRes = (Map<String, Integer>) inp.readObject();
+                    Map<String, Integer> productCatRes = (Map<String, Integer>) in.readObject();
                     System.out.println("Sales by Product Category: ");
                     productCatRes.forEach((category,sales)->
                             System.out.printf("%-20s: %d%n", category, sales));
@@ -188,7 +188,7 @@ public class Manager{
                 case 3:
                     out.writeObject(new WorkerFunctions("SHOP_CATEGORY_SALES"));
                     out.flush();
-                    Map<String, Integer> shopCatRes = (Map<String, Integer>) inp.readObject();
+                    Map<String, Integer> shopCatRes = (Map<String, Integer>) in.readObject();
                     System.out.println("Sales by Shop Category: ");
                     shopCatRes.forEach((category,sales)->
                             System.out.printf("%-20s: %d%n", category, sales));
