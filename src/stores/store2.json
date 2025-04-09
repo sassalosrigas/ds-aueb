@@ -2,8 +2,8 @@
   "storeName" : "Souvlaki Kir Babis",
   "foodCategory" : "souvlakeri",
   "storeLogo" : "/usr/bin/images/storeLogo.png",
-  "latitude" : 37.9932963,
-  "longitude" : 38.733413,
+  "latitude" : 37.994117,
+  "longitude" : 23.732338,
   "stars" : 3.0,
   "noOfVotes" : 15,
   "products" : [ {
