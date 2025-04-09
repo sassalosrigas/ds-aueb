@@ -10,25 +10,21 @@
     "productName" : "Gyros Kotopoulo se Pita",
     "productType" : "Tylixto",
     "availableAmount" : 1500,
-    "price" : 3.0,
-    "totalSales" : 0
+    "price" : 3.0
   }, {
     "productName" : "Vergina",
     "productType" : "Drink",
     "availableAmount" : 500,
-    "price" : 2.0,
-    "totalSales" : 0
+    "price" : 2.0
   }, {
     "productName" : "Kotompeikon se Pita",
     "productType" : "Tylixto",
     "availableAmount" : 1000,
-    "price" : 2.0,
-    "totalSales" : 0
+    "price" : 2.0
   }, {
     "productName" : "Pansetakia",
     "productType" : "Psito",
     "availableAmount" : 4,
-    "price" : 5.0,
-    "totalSales" : 0
-  }]
+    "price" : 5.0
+  } ]
 }

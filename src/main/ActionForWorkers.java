@@ -3,13 +3,14 @@ package main;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ActionForWorkers extends Thread{
     ObjectInputStream in;
     ObjectOutputStream out;
-    private final List<Worker> workers;
+    private List<Worker> workers;
     private final Master master;
 
     public ActionForWorkers(Socket connection, List<Worker> workers, Master master) {
@@ -40,6 +41,74 @@ public class ActionForWorkers extends Thread{
             throw new RuntimeException(e);
         }
 
+    }
+
+    private void rebalanceStores() {
+        List<Store> allStores = new ArrayList<>();
+        for (Worker worker : workers) {
+            allStores.addAll(worker.getAllStores());
+        }
+        for (Worker worker : workers) {
+            worker.clearStores();
+        }
+        int numWorkers = workers.size();
+        Map<Integer, List<Store>> storeAssignment = new HashMap<>();
+
+        for (Store store : allStores) {
+            int workerIndex = Master.hashToWorker(store.getStoreName(), numWorkers);
+            storeAssignment.computeIfAbsent(workerIndex, k -> new ArrayList<>()).add(store);
+        }
+        for (Map.Entry<Integer, List<Store>> entry : storeAssignment.entrySet()) {
+            int workerIndex = entry.getKey();
+            if (workerIndex < workers.size()) {
+                workers.get(workerIndex).addStores(entry.getValue());
+            }
+        }
+
+        System.out.println("Stores rebalanced across " + numWorkers + " workers");
+    }
+
+    public void handleWorkerScaleRequest(int newWorkerCount) {
+        if (newWorkerCount <= 0) {
+            System.out.println("Error: Need at least 1 worker");
+            return;
+        }
+
+        synchronized (workers) {
+            int currentCount = workers.size();
+
+            if (newWorkerCount == currentCount) {
+                System.out.println("Worker count unchanged");
+                return;
+            }
+
+            System.out.println("Scaling from " + currentCount + " to " + newWorkerCount + " workers");
+
+            if (newWorkerCount > currentCount) {
+                for (int i = currentCount; i < newWorkerCount; i++) {
+                    Worker worker = new Worker(i);
+                    worker.start();
+                    workers.add(worker);
+                    System.out.println("Added worker " + i);
+                }
+            }
+            else {
+                List<Store> storesToReassign = new ArrayList<>();
+                for (int i = newWorkerCount; i < currentCount; i++) {
+                    Worker worker = workers.get(i);
+                    storesToReassign.addAll(worker.getAllStores());
+                    worker.shutdown();
+                }
+                workers = workers.subList(0, newWorkerCount);
+                if (!storesToReassign.isEmpty()) {
+                    workers.get(0).addStores(storesToReassign);
+                }
+            }
+
+            rebalanceStores();
+
+            System.out.println("Scaling completed. Current workers: " + workers.size());
+        }
     }
 
     public void processRequest(WorkerFunctions request) {
@@ -142,36 +211,6 @@ public class ActionForWorkers extends Thread{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }else if(operation.equals("SEARCH_STORES")) {
-                String foodCategory = request.getName();
-                double lowerStars = request.getDouble1();
-                double upperStars = request.getDouble2();
-                String priceCategory = request.getName2();
-                List<Store> stores = new ArrayList<Store>();
-                List<Thread> workerThreads = new ArrayList<>();
-                for(Worker worker: workers) {
-                    Thread t = new Thread(() -> {
-                        List<Store> workerStores = worker.filterStores(foodCategory, lowerStars, upperStars, priceCategory);
-                        synchronized(stores) {
-                            stores.addAll(workerStores);
-                        }
-                    });
-                    workerThreads.add(t);
-                    t.start();
-                }
-                for(Thread t : workerThreads) {
-                    try {
-                        t.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                try {
-                    out.writeObject(stores);
-                    out.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }else if(operation.equals("BUY_PRODUCT")) {
                 Product product = (Product)request.getObject();
                 Store store = (Store)request.getObject2();
@@ -194,16 +233,16 @@ public class ActionForWorkers extends Thread{
             }else if(operation.equals("SHOW_ALL_STORES")) {
                 List<Store> stores = new ArrayList<Store>();
                 List<Thread> workerThreads = new ArrayList<>();
-                for(Worker worker: workers) {
+                for (Worker worker : workers) {
                     Thread t = new Thread(() -> {
-                        synchronized(stores) {
+                        synchronized (stores) {
                             stores.addAll(worker.showAllStores());
                         }
                     });
                     workerThreads.add(t);
                     t.start();
                 }
-                for(Thread t : workerThreads) {
+                for (Thread t : workerThreads) {
                     try {
                         t.join();
                     } catch (InterruptedException e) {
@@ -216,6 +255,14 @@ public class ActionForWorkers extends Thread{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }else if (operation.equals("FILTER_STORES")) {
+                String foodCategory = request.getName();
+                double lowerStars = request.getDouble1();
+                double upperStars = request.getDouble2();
+                String priceCategory = request.getName2();
+
+                List<Store> results = master.filterStores(foodCategory, lowerStars, upperStars, priceCategory);
+                out.writeObject(results);
             }else if(operation.equals("APPLY_RATING")){
                 Store store = (Store)request.getObject();
                 int rating = request.getNum();

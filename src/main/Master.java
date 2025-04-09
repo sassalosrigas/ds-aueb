@@ -1,4 +1,7 @@
 package main;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -6,10 +9,30 @@ import java.util.stream.Collectors;
 public class Master{
     ServerSocket serverSocket;
     Socket socket;
-    private final List<Worker> workers = Collections.synchronizedList(new ArrayList<Worker>());
+    private final List<Worker> workers;
+    private Properties config;
 
     public Master(){
-        for(int i=0;i<10;i++){
+        this.workers = Collections.synchronizedList(new ArrayList<Worker>());
+        this.config = new Properties();
+
+        try (InputStream input = new FileInputStream("src/main/config.properties")) {
+            config.load(input);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int workerCount = Integer.parseInt(config.getProperty("workerCount"));
+        for (int i = 0; i < workerCount; i++) {
+            Worker worker = new Worker(i);
+            worker.start();
+            workers.add(worker);
+        }
+    }
+
+    public Master(int workerCount) {
+        this.workers = Collections.synchronizedList(new ArrayList<>());
+        for (int i = 0; i < workerCount; i++) {
             Worker worker = new Worker(i);
             worker.start();
             workers.add(worker);
@@ -17,8 +40,19 @@ public class Master{
     }
 
     public static void main(String[] args) {
-
-        new Master().openServer();
+        Master master;
+        if (args.length > 0) {
+            try {
+                int workerCount = Integer.parseInt(args[0]);
+                master = new Master(workerCount);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                master = new Master();
+            }
+        } else {
+            master = new Master();
+        }
+        master.openServer();
     }
 
     void openServer() {
@@ -85,16 +119,11 @@ public class Master{
         return results;
     }
 
-    /*
-    public List<Store> filterStores(MapReduceRequest request){
-        List<Store> mappredResults = workers.parallelStream()
-                .flatMap(worker -> worker.mapFilterStores(
-                        request.getFoodCategory(),
-                        request.getStars(),
-                        request.getPriceCategory()).stream())
-                .collect(Collectors.toList());
-        return mappredResults;
+    public List<Store> filterStores(String category, double minRate, double maxRate, String priceCat) {
+        List<Store> mappedResults = workers.parallelStream().flatMap(worker -> worker.mapFilterStores(
+                category, minRate, maxRate, priceCat
+        ).stream()).collect(Collectors.toList());
+        return mappedResults.stream().distinct().collect(Collectors.toList());
     }
 
-     */
 }

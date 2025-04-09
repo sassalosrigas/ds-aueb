@@ -17,10 +17,7 @@ public class Worker extends Thread {
         this.workerId = workerId;
     }
 
-
-    public List<Store> getStores() {
-        return storeList;
-    }
+    private boolean running = true;
 
     private static class PendingPurchase{
         String productName;
@@ -34,24 +31,48 @@ public class Worker extends Thread {
     }
     @Override
     public void run() {
-        while(true) {
+        while(running) {
             synchronized (this) {
-                while(task == null) {
+                while(task == null && running) {
                     try {
                         wait();
                     } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                        Thread.currentThread().interrupt();
+                        return;
                     }
                 }
-                task.run();
-                task = null;
+                if (!running) break;
+                try {
+                    task.run();
+                } catch (Exception e) {
+                    System.err.println("Error running worker " + workerId);
+                } finally {
+                    task = null;
+                }
             }
         }
     }
-
     public synchronized void receiveTask(Runnable task) {
         this.task = task;
         notify();
+    }
+
+    public synchronized List<Store> getAllStores() {
+        return new ArrayList<>(storeList);
+    }
+
+    public synchronized void clearStores() {
+        storeList.clear();
+    }
+
+    public synchronized void addStores(List<Store> stores) {
+        storeList.addAll(stores);
+        storeList.forEach(Store::calculatePriceCategory);
+    }
+
+    public void shutdown() {
+        this.running = false;
+        this.notifyAll();
     }
 
     public synchronized boolean addStore(Store store) {
@@ -183,6 +204,7 @@ public class Worker extends Thread {
                     product.availableAmount = quantity;
                 }
             }
+            JsonHandler.writeStoreToJson(store, store.getFilepath());
             System.out.println("Changed product " + productName + " from store " + store.getStoreName());
         }else{
             System.out.println("Product does not exist");
@@ -228,33 +250,33 @@ public class Worker extends Thread {
         }
         return null;
     }
-    public synchronized  List<Store> filterStores(String category, double lower, double upper, String price) {
-        List<Store> stores = new ArrayList<>();
-        System.out.println(category);
-        System.out.println(lower);
-        System.out.println(upper);
-        System.out.println(price);
-        for(Store store : storeList){
-            if(store.getFoodCategory().equals(category) && store.getStars()>= lower && store.getStars()<= upper && store.getPriceCategory().equals(price)){
-                stores.add(store);
+
+    public List<Store> mapFilterStores(String category, double minRate, double maxRate, String priceCat) {
+            List<Store> results = new ArrayList<>();
+            for(Store store : storeList){
+                if(matchesFilter(store, category, minRate, maxRate, priceCat)) {
+                    results.add(store);
+                }
             }
-        }
-        return stores;
+            return results;
     }
 
-    /*
-    public List<Store> mapFilterStores(String category, double lower, double upper, String price) {
-        List<Store> results = new ArrayList<>();
-        for (Store store : storeList) {
-            if (store.matchesCriteria(category, lower, upper, price)) {
-                results.add(store);
-            }
+    public boolean matchesFilter(Store store, String category, double minRate, double maxRate, String priceCat) {
+        boolean result = true;
+        if (category != null && !store.getFoodCategory().equalsIgnoreCase(category)) {
+            return false;
         }
-        return results;
+        if (store.getStars() < minRate || store.getStars() > maxRate) {
+            return false;
+        }
+        if (priceCat != null && !store.getPriceCategory().equalsIgnoreCase(priceCat)) {
+            return false;
+        }
+        return result;
     }
 
 
-     */
+
     public void rateStore(Store store, int rating){
         for(Store s : storeList){
             if(s.getStoreName().equals(store.getStoreName())){
@@ -347,6 +369,5 @@ public class Worker extends Thread {
         }
         return results;
     }
-
 }
 

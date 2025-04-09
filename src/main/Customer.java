@@ -137,54 +137,37 @@ public class Customer implements Serializable {
     }
 
     public void filterStores(Scanner in){
-        try{
-            String category = "", price = "";
-            System.out.println("Choose food category");
-            System.out.println("1. pizzeria");
-            System.out.println("2. souvlakeri");
-            System.out.println("3. taverna");
-            int choice = in.nextInt();
-            if(choice == 1){
-                category = "pizzeria";
-            }else if(choice == 2){
-                category = "souvlakeri";
-            }else if(choice == 3){
-                category = "taverna";
-            }
-            System.out.println("Choose stars");
-            System.out.println("Lower boundary");
-            double lower = in.nextDouble();
-            System.out.println("Upper boundary");
-            double upper = in.nextDouble();
-            System.out.println("Price category");
-            System.out.println("1. $");
-            System.out.println("2. $$");
-            System.out.println("3. $$$");
-            choice = in.nextInt();
-            if(choice == 1){
-                price = "$";
-            }else if(choice == 2){
-                price = "$$";
-            }else if(choice == 3){
-                price = "$$$";
-            }
+        try {
+            System.out.println("Choose Food Category (leave empty for any):");
+            String category = in.nextLine();
+            System.out.println("Minimum Rating (1-5)");
+            double minRate = in.nextDouble();
+            System.out.println("Maximum Rating (1-5)");
+            double maxRate = in.nextDouble();
+            in.nextLine();
+            System.out.println("Price Category (leave empty for any):");
+            String priceCat = in.nextLine();
+
             Socket socket = new Socket("localhost", 8080);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream inp = new ObjectInputStream(socket.getInputStream());
-            out.writeObject(new WorkerFunctions("SEARCH_STORES",category, lower, upper, price));
+
+            out.writeObject(new WorkerFunctions("FILTER_STORES",
+                    category.isEmpty() ? null : category,
+                    minRate, maxRate,
+                    priceCat.isEmpty() ? null : priceCat));
             out.flush();
-            Object response = inp.readObject();
-            if(response instanceof ArrayList){
-                System.out.println("Server response: ");
-                for(Store store : (ArrayList<Store>)response){
-                    System.out.println(store.getStoreName());
-                }
-            }
+
+            List<Store> results = (List<Store>) inp.readObject();
+            System.out.println("Found " + results.size() + " results");
+            results.forEach(store ->
+                System.out.println(store.getStoreName() + "(" + store.getFoodCategory() + ") - Rating: " + store.getStars()
+                        + " - Price: " + store.getPriceCategory()));
             out.close();
             inp.close();
             socket.close();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
