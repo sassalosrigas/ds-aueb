@@ -68,7 +68,7 @@ public class Product implements Serializable {
     }
 
     public void addSales(int quantity) {
-        this.totalSales += quantity;
+        totalSales += quantity;
     }
 
     public boolean isOnline() {

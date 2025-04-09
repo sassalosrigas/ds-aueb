@@ -177,8 +177,22 @@ public class Manager{
                             System.out.printf("%-20s: %d%n", product, sales));
                     break;
                 case 2:
+                    out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES"));
+                    out.flush();
+                    Map<String, Integer> productCatRes = (Map<String, Integer>) inp.readObject();
+                    System.out.println("Sales by Product Category: ");
+                    productCatRes.forEach((category,sales)->
+                            System.out.printf("%-20s: %d%n", category, sales));
+                    System.out.println("Total: "+ productCatRes.values().stream().mapToInt(Integer::intValue).sum());
                     break;
                 case 3:
+                    out.writeObject(new WorkerFunctions("SHOP_CATEGORY_SALES"));
+                    out.flush();
+                    Map<String, Integer> shopCatRes = (Map<String, Integer>) inp.readObject();
+                    System.out.println("Sales by Shop Category: ");
+                    shopCatRes.forEach((category,sales)->
+                            System.out.printf("%-20s: %d%n", category, sales));
+                    System.out.println("Total: "+ shopCatRes.values().stream().mapToInt(Integer::intValue).sum());
                     break;
             }
 

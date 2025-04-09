@@ -1,29 +1,29 @@
 {
   "storeName" : "Taverna To Asylo",
-  "foodCategory" : "taverna",
+  "foodCategory" : "Psitopolio",
   "storeLogo" : "/usr/bin/images/storeLogo.png",
-  "latitude" : 37.9932963,
-  "longitude" : 23.733413,
+  "latitude" : 37.984071,
+  "longitude" : 23.728151,
   "stars" : 3.0,
   "noOfVotes" : 15,
   "products" : [ {
     "productName" : "Xoirini Mprizola",
-    "productType" : "mprizola",
+    "productType" : "Psito",
     "availableAmount" : 2000,
     "price" : 3.0
   }, {
     "productName" : "Mamos",
-    "productType" : "beer",
+    "productType" : "Drink",
     "availableAmount" : 1000,
     "price" : 2.0
   }, {
     "productName" : "Xoriatiki",
-    "productType" : "salad",
+    "productType" : "Salad",
     "availableAmount" : 1000,
     "price" : 2.0
   }, {
     "productName" : "Saganaki Tyri",
-    "productType" : "turi",
+    "productType" : "Orektiko",
     "availableAmount" : 4,
     "price" : 5.0
   } ]

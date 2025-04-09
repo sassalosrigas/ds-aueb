@@ -60,4 +60,28 @@ public class Master{
         }
         return results;
     }
+
+    public Map<String, Integer> aggregateProductCategorySales() {
+        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
+        for (Worker worker : workers) {
+            mappedResults.addAll(worker.mapProductCategorySales());
+        }
+        Map<String, Integer> results = new HashMap<>();
+        for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
+            results.merge(entry.getKey(), entry.getValue(), Integer::sum);
+        }
+        return results;
+    }
+
+    public Map<String, Integer> aggregateShopCategorySales() {
+        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
+        for (Worker worker : workers) {
+            mappedResults.addAll(worker.mapShopCategorySales());
+        }
+        Map<String, Integer> results = new HashMap<>();
+        for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
+            results.merge(entry.getKey(), entry.getValue(), Integer::sum);
+        }
+        return results;
+    }
 }

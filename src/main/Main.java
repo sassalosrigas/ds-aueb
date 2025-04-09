@@ -24,7 +24,7 @@ public class Main {
                         System.out.println("2. Add product to store");
                         System.out.println("3. Remove product from store");
                         System.out.println("4. Update stock of product");
-                        System.out.println("5. Sales per product");
+                        System.out.println("5. Statistics");
                         System.out.println("0. Exit");
                         choice = in.nextInt();
                         System.out.println(choice);
@@ -54,7 +54,7 @@ public class Main {
                 }
             } else if (mode == 2) {
                 System.out.println("Now working in customer mode");
-                Customer customer = new Customer("aaa", "123", 37.9932963, 38.733413);
+                Customer customer = new Customer("rigas", "123", 37.986633, 23.734900);
                 try {
                     int choice;
                     do {
