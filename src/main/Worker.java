@@ -128,10 +128,11 @@ public class Worker extends Thread {
     }
 
     public synchronized boolean reserveProduct(Store store, Product product, int quantity) {
-        for(Product p : store.getProducts()){
+        Store currStore = getStore(store.getStoreName());
+        for(Product p : currStore.getProducts()){
             if(p.getProductName().equals(product.getProductName())){
                 synchronized(p){
-                    if(p.getAvailableAmount() >= quantity){
+                    if(p.getAvailableAmount() >= quantity && p.getAvailableAmount() > 0){
                         p.setAvailableAmount(p.getAvailableAmount() - quantity);
                         pendingPurchases
                                 .computeIfAbsent(store.getStoreName(), k -> new ArrayList<>())
@@ -178,6 +179,7 @@ public class Worker extends Thread {
 
         for (PendingPurchase pp : pending) {
             for (Product p : store.getProducts()) {
+                System.out.println(p.getProductName() + " " + p.getAvailableAmount());
                 if (p.getProductName().equals(pp.productName)) {
                     synchronized (p) {
                         p.addSales(pp.quantity);
