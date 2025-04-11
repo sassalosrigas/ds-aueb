@@ -1,7 +1,7 @@
 {
   "storeName" : "Taverna To Asylo",
   "foodCategory" : "Psitopolio",
-  "storeLogo" : "/usr/bin/images/storeLogo.png",
+  "storeLogo" : "src/logos/asylo.png",
   "latitude" : 37.984071,
   "longitude" : 23.728151,
   "stars" : 3.0,
