@@ -311,7 +311,7 @@ public class ActionForWorkers extends Thread{
                 int assign = Master.hashToWorker(store.getStoreName(), workers.size());
                 Worker worker = workers.get(assign);
                 worker.receiveTask(() -> {
-                    boolean completed = worker.commitPurchase(store.getStoreName());
+                    boolean completed = worker.completePurchase(store.getStoreName());
                     try {
                         if (completed) {
                             out.writeObject("Purchase successful");
