@@ -14,13 +14,22 @@ public class Customer implements Serializable {
     private String username,password;
     private double longitude,latitude;
 
-    private static class ProductOrder {
+    public static class ProductOrder implements Serializable {
+        /*
+            Bohthitikh klash gia na parakolouthei to kalathi mias paraggelias
+            kai na to emfanizei sto telos
+         */
         final String productName;
         final int quantity;
 
         ProductOrder(String productName, int quantity) {
             this.productName = productName;
             this.quantity = quantity;
+        }
+
+        @Override
+        public String toString() {
+            return "Product: " + productName + " Quantity: " + quantity;
         }
     }
 
@@ -32,6 +41,9 @@ public class Customer implements Serializable {
     }
 
     public void showNearbyStores(){
+        /*
+            Deixnei ta katasthmata se apostash 5km apo ton pelath
+         */
         try{
             Socket socket = new Socket("localhost", 8080);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -58,6 +70,9 @@ public class Customer implements Serializable {
     }
 
     public void buyProducts(Scanner input){
+        /*
+            Dhmiourgia paraggelias apo katasthma kai agora
+         */
         try{
             Socket socket = new Socket("localhost", 8080);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -76,18 +91,18 @@ public class Customer implements Serializable {
                 int choice = input.nextInt();
                 if(choice >= 1 && choice <= ((ArrayList<?>) response).size()){
                     Store store = ((ArrayList<Store>) response).get(choice-1);
-                    List<ProductOrder> cart = new ArrayList<>();
+                    List<ProductOrder> cart = new ArrayList<>(); //Lista pou krataei apothikeumeno to kalathi ths paraggelias
                     boolean purchasing = true;
                     while(purchasing){
                         System.out.println("Choose product");
                         ArrayList<Product> products = new ArrayList<>();
-                        for(Product product : store.getProducts()){
+                        for(Product product : store.getProducts()){    //Apothikeuei ta online proionta mono
                             if (product.isOnline()) {
                                 products.add(product);
                             }
                         }
                         counter = 1;
-                        for(Product product : products){
+                        for(Product product : products){    //Epilogh me bash ta online proionta
                             System.out.println(counter + ". " + product.getProductName());
                             counter++;
                         }
@@ -97,24 +112,37 @@ public class Customer implements Serializable {
                         if(choice >= 1 && choice <= products.size()){
                             System.out.println("Choose quantity");
                             int quantity = input.nextInt();
-                            out.writeObject(new WorkerFunctions("RESERVE_PRODUCT", products.get(choice-1),store, quantity));
+                            out.writeObject(new WorkerFunctions("RESERVE_PRODUCT", products.get(choice-1),store,this, quantity));  //Desmeuei ena proion prosorina
                             out.flush();
                             Object response2 = in.readObject();
-                            if(response2 instanceof String) {
-                                System.out.println("Server response: " + response2);
+                            if(response2 instanceof ProductOrder) {
+                                System.out.println("Product reserved successfully");
+                                cart.add((ProductOrder) response2);  //Enhmerwsh kalathiou
+                            }else{
+                                System.out.println(response2);
                             }
                         }else if(choice == 0){
-                            out.writeObject(new WorkerFunctions("COMPLETE_PURCHASE", store));
+                            /*
+                                Oristikopoiei thn paraggelia kai tiponei to kalathi me ta proionta
+                             */
+                            out.writeObject(new WorkerFunctions("COMPLETE_PURCHASE", store, this));
                             out.flush();
                             response = (String) in.readObject();
                             if(response.equals("Purchase successful")){
                                 System.out.println("Purchase completed");
+                                for(ProductOrder order : cart){
+                                    System.out.println(order.toString());
+                                }
                             }else{
                                 System.out.println("Purchase failed");
                             }
                             purchasing = false;
                         }else{
-                            out.writeObject(new WorkerFunctions("ROLLBACK_PURCHASE", store));
+                            /*
+                                Akironei thn paraggelia kai epitrefei to katasthma sthn katastash pou eixe prin thn
+                                enarksh ths
+                             */
+                            out.writeObject(new WorkerFunctions("ROLLBACK_PURCHASE", store, this));
                             out.flush();
                             response = (String) in.readObject();
                             System.out.println("Order cancelled");
@@ -137,6 +165,9 @@ public class Customer implements Serializable {
     }
 
     public void filterStores(Scanner in){
+        /*
+            Epilogh apo diathesima filtra kai provolh twn katasthmatwn pou antistoixoun se auta
+         */
         try {
             System.out.println("Choose Food Category (leave empty for any):");
             String category = in.nextLine();
@@ -172,6 +203,9 @@ public class Customer implements Serializable {
     }
 
     public void rateStore(Scanner in){
+        /*
+            Bathmologhsh katasthmatos
+         */
         try{
             Socket socket = new Socket("localhost", 8080);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());

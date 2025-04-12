@@ -20,6 +20,9 @@ public class Worker extends Thread {
     private boolean running = true;
 
     private static class PendingPurchase{
+        /*
+            Bohthitikh klash gia thn diadikasia paraggelias proiontwn
+         */
         String productName;
         int quantity;
 
@@ -57,7 +60,7 @@ public class Worker extends Thread {
         notify();
     }
 
-    public synchronized List<Store> getAllStores() {
+    public List<Store> getAllStores() {
         return new ArrayList<>(storeList);
     }
 
@@ -76,6 +79,9 @@ public class Worker extends Thread {
     }
 
     public synchronized boolean addStore(Store store) {
+        /*
+            Prosthikh katasthmatow sthn lista
+         */
         if(store!=null && !storeList.contains(store)) {
             storeList.add(store);
             store.calculatePriceCategory();
@@ -85,6 +91,9 @@ public class Worker extends Thread {
     }
 
     public boolean hasStore(String storeName) {
+        /*
+            Elegxos uparkshs katasthmatos sthn lista
+         */
         for(Store store : storeList){
             if(store.getStoreName().equals(storeName)){
                 return true;
@@ -94,6 +103,9 @@ public class Worker extends Thread {
     }
 
     public boolean hasProduct(String storeName, String productName) {
+        /*
+            Elegxos uparkshs proiontos sthn lista
+         */
         Store store = getStore(storeName);
         if(store!=null){
             for(Product product : store.getProducts()){
@@ -106,6 +118,7 @@ public class Worker extends Thread {
     }
 
     public boolean buyProduct(Store store, Product product, int quantity) {
+
         for(Store s: storeList){
             if(s.getStoreName().equals(store.getStoreName())){
                 synchronized (s) {
@@ -128,15 +141,18 @@ public class Worker extends Thread {
         return false;
     }
 
-    public synchronized boolean reserveProduct(Store store, Product product, int quantity) {
+    public synchronized boolean reserveProduct(Store store, Product product,Customer customer, int quantity) {
+        /*
+            Proswrinh krathsh proiontos mextri na oloklhrwthei/akirothei paraggelia
+         */
         Store currStore = getStore(store.getStoreName());
-        synchronized(currStore){
+        synchronized(currStore){    //Kleidwma store gia na mhn mporei na ginei modifies tautoxrona apo allou
             for(Product p : currStore.getProducts()){
                 if(p.getProductName().equals(product.getProductName())){
                     if(p.getAvailableAmount() >= quantity && p.getAvailableAmount() > 0){
                         p.setAvailableAmount(p.getAvailableAmount() - quantity);
-                        pendingPurchases
-                                .computeIfAbsent(store.getStoreName(), k -> new ArrayList<>())
+                        pendingPurchases        //Prosthese to proion sthn ekkremh paraggelia me unique ID storeName(koino) mazi me username pelath(pou einai monadiko)
+                                .computeIfAbsent(store.getStoreName() + customer.getUsername(), k -> new ArrayList<>())
                                 .add(new PendingPurchase(product.getProductName(), quantity));
                         return true;
                     }
@@ -147,36 +163,40 @@ public class Worker extends Thread {
         return false;
     }
 
-    public synchronized boolean rollbackPurchase(String storeName) {
+    public synchronized boolean rollbackPurchase(String storeName, String username) {
+        /*
+            Diadikasia epanaforas katasthmatos sthn arxikh tou katastash meta
+            apo akirwsh paraggelias
+         */
         Store store = getStore(storeName);
         if(store == null || !pendingPurchases.containsKey(storeName)) {
             return false;
         }
-        synchronized (store){
-            List<PendingPurchase> pending = pendingPurchases.get(storeName);
+        synchronized (store){   //Kleidwma store
+            List<PendingPurchase> pending = pendingPurchases.get(storeName+username);
             for (PendingPurchase pp : pending) {
                 for (Product p : store.getProducts()) {
                     if (p.getProductName().equals(pp.productName)) {
-                        p.setAvailableAmount(p.getAvailableAmount() + pp.quantity);
+                        p.setAvailableAmount(p.getAvailableAmount() + pp.quantity); //Prosthesh quantity pou eixe desmeuthei prosorina apo reservation
                         if (p.getAvailableAmount() > 0 && !p.isOnline()) {
-                            p.setOnline(true);
+                            p.setOnline(true);   //Epanefere ta proionta pou eixan ksemeinei apo stock online
                         }
                     }
                 }
             }
 
-            pendingPurchases.remove(storeName);
+            pendingPurchases.remove(storeName+username); //Afairesh apo ekkremh paraggelia
             return true;
         }
     }
 
-    public synchronized boolean completePurchase(String storeName) {
+    public synchronized boolean completePurchase(String storeName, String username) {
         Store store = getStore(storeName);
-        if(store == null || !pendingPurchases.containsKey(storeName)) {
+        if(store == null || !pendingPurchases.containsKey(storeName+username)) {
             return false;
         }
         synchronized (store) {
-            List<PendingPurchase> pending = pendingPurchases.get(storeName);
+            List<PendingPurchase> pending = pendingPurchases.get(storeName+username);
             for (PendingPurchase pp : pending) {
                 for (Product p : store.getProducts()) {
                     System.out.println(p.getProductName() + " " + p.getAvailableAmount());
@@ -185,13 +205,11 @@ public class Worker extends Thread {
                             if (p.getAvailableAmount() == 0) {
                                 p.setOnline(false);
                             }
-
-                        break;
                     }
                 }
             }
 
-            pendingPurchases.remove(storeName);
+            pendingPurchases.remove(storeName+username);
             return true;
         }
     }
@@ -203,7 +221,7 @@ public class Worker extends Thread {
             synchronized (store) {
                 for(Product product : store.getProducts()){
                     if(product.getProductName().equals(productName)){
-                        product.availableAmount = quantity;
+                        product.setAvailableAmount(quantity);
                     }
                 }
                 System.out.println("Changed product " + productName + " from store " + store.getStoreName());
@@ -222,6 +240,7 @@ public class Worker extends Thread {
                             if(!p.isOnline()){
                                 p.setOnline(true);
                             }
+                            s.calculatePriceCategory();
                             return true;
                         }
                     }
@@ -232,13 +251,14 @@ public class Worker extends Thread {
         return false;
     }
 
-    public synchronized boolean removeProduct(Store store, Product product) {
+    public boolean removeProduct(Store store, Product product) {
         for(Store s : storeList){
             if(s.equals(store)){
                 synchronized (s){
                     for(Product p: s.getProducts()){
                         if(p.getProductName().equals(product.getProductName())){
                             p.setOnline(false);
+                            s.calculatePriceCategory();
                             return true;
                         }
                     }
@@ -295,11 +315,11 @@ public class Worker extends Thread {
         }
     }
 
-    public synchronized List<Store> showAllStores(){
+    public List<Store> showAllStores(){
         return new ArrayList<>(storeList);
     }
 
-    public synchronized List<Store> showStores(Customer customer){
+    public List<Store> showStores(Customer customer){
         List<Store> stores = new ArrayList<>();
         for(Store store : storeList){
             if(isWithInRange(store, customer)){

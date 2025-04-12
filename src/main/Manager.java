@@ -13,6 +13,9 @@ public class Manager{
 
 
     public static void addStore(Scanner input) {
+        /*
+            Diabazei ena store mesw JSON arxeiou kai to arxikopoiei
+         */
         try {
             System.out.println("Please provide the file with the data: ");
             String filepath = input.nextLine();
@@ -46,6 +49,9 @@ public class Manager{
     }
 
     public static Product addProduct(Scanner input){
+        /*
+            Diadikasia eisodou kai dhmiourgias proiontos
+         */
         try{
             System.out.println("Give product name:");
             String productName = input.nextLine();
@@ -63,6 +69,9 @@ public class Manager{
     }
 
     public static void removeProductFromStore(Scanner input){
+        /*
+            Epilogh proiontos apo uparxonta kai thesimo tou ws offline
+         */
         try{
             Socket socket = new Socket("localhost", 8080);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -105,6 +114,10 @@ public class Manager{
 
 
         public static void addProductToStore(Scanner input){
+        /*
+            Prosthiki proiontos se katasthma h thesimo enos hdh uparxontos offline
+            proiontos se online
+         */
         try{
             try{
                 Socket socket = new Socket("localhost", 8080);
@@ -158,7 +171,7 @@ public class Manager{
             System.out.println("2. Sales by product category");
             System.out.println("3. Sales by shop category");
             int choice = input.nextInt();
-            input.nextLine(); // Consume newline
+            input.nextLine();
 
             Socket socket = new Socket("localhost", 8080);
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -205,6 +218,9 @@ public class Manager{
     }
 
     public static void modifyAvailability(Scanner input){
+        /*
+            Allagh tou diathesimou stock enos proiontos
+         */
         try{
             System.out.println("Give the store's name:");
             String storeName = input.nextLine();
@@ -232,42 +248,9 @@ public class Manager{
             throw new RuntimeException(e);
         }
     }
-    /*
-    public static void modifyAvailability(Scanner in){
-        try{
-            //List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            List<Store> stores = JsonHandler.readStoresFromJson("store.json");
-            System.out.println("Choose store to remove product from:");
-            int counter = 1;
-            for(Store s: stores){
-                System.out.println(counter + ". " + s.getStoreName());
-                counter++;
-            }
-            int choice = in.nextInt();
-            Store currentStore = stores.get(choice-1);
-            System.out.println("Choose product to modify stock:");
-            counter = 1;
-            for(Product p: currentStore.getProducts()){
-                System.out.println(counter + ". " + p.getProductName());
-                counter++;
-            }
-            choice = in.nextInt();
-            System.out.println("Give new stock:");
-            int newStock = in.nextInt();
-            currentStore.getProducts().get(choice-1).setAvailableAmount(newStock);
-            //JsonHandler.writeStoreToJson(currentStore, "C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
-            JsonHandler.writeStoreToJson(currentStore, "store.json");
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-     */
 
     public static void avgPrice(){
         try{
-            //List<Store> stores = JsonHandler.readStoresFromJson("C:\\Users\\dodor\\OneDrive\\Υπολογιστής\\ds_aueb\\ds-aueb\\src\\main\\java\\store.json");
             List<Store> stores = JsonHandler.readStoresFromJson("store.json");
             int totalPrice = 0;
             for(Store s: stores){

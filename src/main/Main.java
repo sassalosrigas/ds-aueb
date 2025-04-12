@@ -7,14 +7,15 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-        new Master();
+        new Master();      //Arxikopoihsh kai run Master server
         System.out.println("Choose mode: (1) manager, (2) client, (3) Exit");
         int mode = in.nextInt();
-        Manager.addStore(new Scanner("src/stores/store.json"));
+        Manager.addStore(new Scanner("src/stores/store.json"));  //Arxikopoihsh stores me thn ekkinhsh
         Manager.addStore(new Scanner("src/stores/store2.json"));
         Manager.addStore(new Scanner("src/stores/store3.json"));
         do {
             if (mode == 1) {
+                //Console menu leitourgias manager
                 System.out.println("Now working in manager mode");
                 try {
                     int choice;
@@ -53,6 +54,7 @@ public class Main {
                     throw new RuntimeException(e);
                 }
             } else if (mode == 2) {
+                //Console menu leitourgias customer
                 System.out.println("Now working in customer mode");
                 Customer customer = new Customer("rigas", "123", 37.986633, 23.734900);
                 try {

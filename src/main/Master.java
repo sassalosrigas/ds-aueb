@@ -31,6 +31,9 @@ public class Master{
     }
 
     public Master(int workerCount) {
+        /*
+            Dhmiourgia listas worker kai enarksh tou kathenos
+         */
         this.workers = Collections.synchronizedList(new ArrayList<>());
         for (int i = 0; i < workerCount; i++) {
             Worker worker = new Worker(i);
@@ -41,21 +44,31 @@ public class Master{
 
     public static void main(String[] args) {
         Master master;
+        /*
+            An uparxei configuration file pare arithmo worker apo auto alliws apo
+            ta arguments tou programmatos
+         */
         if (args.length > 0) {
             try {
                 int workerCount = Integer.parseInt(args[0]);
+                System.out.println("Starting master with " + workerCount + " workers");
                 master = new Master(workerCount);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
+                System.out.println("Invalid argument");
                 master = new Master();
             }
         } else {
+            System.out.println("Reading number of workers from configuration file");
             master = new Master();
         }
         master.openServer();
     }
 
     void openServer() {
+        /*
+            Arxikopoihsh kai ksekinhma leitourgias Master server
+         */
         new Thread(()-> {
             try {
                 System.out.println("Opening server...");
@@ -78,6 +91,9 @@ public class Master{
     }
 
     public static int hashToWorker(String storeName, int numOfWorkers) {
+        /*
+            Hash sunarthsh me bash to onoma tou katasthmatos gia anathesh se swsto worker
+         */
         return Math.abs(storeName.hashCode()) % numOfWorkers;
     }
 

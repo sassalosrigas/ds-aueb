@@ -112,6 +112,10 @@ public class ActionForWorkers extends Thread{
     }
 
     public void processRequest(WorkerFunctions request) {
+        /*
+            Dexetai ena WorkerFunctions antikeimeno kai afou diabazei to operation kanei tis
+            antistoixes energeies kai anathetei thn diadikasia se enan worker ston opoio kanei hash gia thn epilogh tou
+         */
         try{
             String operation = request.getOperation();
             if(operation.equals("ADD_STORE")) {
@@ -290,14 +294,15 @@ public class ActionForWorkers extends Thread{
             }else if(operation.equals("RESERVE_PRODUCT")){
                 Store store = (Store)request.getObject2();
                 Product product = (Product) request.getObject();
+                Customer customer = (Customer) request.getObject3();
                 int quantity = request.getNum();
                 int assign = Master.hashToWorker(store.getStoreName(), workers.size());
                 Worker worker = workers.get(assign);
                 worker.receiveTask(() -> {
-                    boolean reserved = worker.reserveProduct(store, product, quantity);
+                    boolean reserved = worker.reserveProduct(store, product, customer, quantity);
                     try{
                         if(reserved){
-                            out.writeObject("Reserved successfully");
+                            out.writeObject(new Customer.ProductOrder(product.getProductName(), quantity));
                         }else{
                             out.writeObject("Reservation failed");
                         }
@@ -308,10 +313,11 @@ public class ActionForWorkers extends Thread{
                 });
             }else if(operation.equals("COMPLETE_PURCHASE")){
                 Store store = (Store)request.getObject();
+                Customer customer = (Customer) request.getObject2();
                 int assign = Master.hashToWorker(store.getStoreName(), workers.size());
                 Worker worker = workers.get(assign);
                 worker.receiveTask(() -> {
-                    boolean completed = worker.completePurchase(store.getStoreName());
+                    boolean completed = worker.completePurchase(store.getStoreName(), customer.getUsername());
                     try {
                         if (completed) {
                             out.writeObject("Purchase successful");
@@ -325,10 +331,11 @@ public class ActionForWorkers extends Thread{
                 });
             }else if(operation.equals("ROLLBACK_PURCHASE")){
                 Store store = (Store)request.getObject();
+                Customer customer = (Customer) request.getObject2();
                 int assign = Master.hashToWorker(store.getStoreName(), workers.size());
                 Worker worker = workers.get(assign);
                 worker.receiveTask(() -> {
-                    boolean reverted = worker.rollbackPurchase(store.getStoreName());
+                    boolean reverted = worker.rollbackPurchase(store.getStoreName(), customer.getUsername());
                     try {
                         if(reverted){
                             out.writeObject("Revert successful");

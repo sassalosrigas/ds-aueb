@@ -3,8 +3,12 @@ package main;
 import java.io.Serializable;
 
 public class WorkerFunctions implements Serializable {
+    /*
+        Bohthitikh klash gia analhpsh requests apo to ActionForWorkers me eidika constructor gia kathe
+        leitourgia pou mporei na prokipsei sthn efarmogh
+     */
     String operation;
-    Object object, object2;
+    Object object, object2, object3;
     String name;
     String name2;
     int num;
@@ -70,6 +74,14 @@ public class WorkerFunctions implements Serializable {
         this.num = num;
     }
 
+    public WorkerFunctions(String operation, Object object,Object object2,Object object3, int num){
+        this.operation = operation;
+        this.object = object;
+        this.object2 = object2;
+        this.object3 = object3;
+        this.num = num;
+    }
+
     public String getOperation() {
         return this.operation;
     }
@@ -80,6 +92,10 @@ public class WorkerFunctions implements Serializable {
 
     public String getName() {
         return this.name;
+    }
+
+    public Object getObject3() {
+        return object3;
     }
 
     public String getName2(){
