@@ -1,9 +1,6 @@
 package main;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -11,7 +8,8 @@ public class Worker extends Thread {
     private final int workerId;
     private List<Store> storeList = new CopyOnWriteArrayList<>();
     private Runnable task = null;
-    private final Map<String, List<PendingPurchase>> pendingPurchases = new ConcurrentHashMap<>();
+    private Map<String, List<PendingPurchase>> pendingPurchases = new ConcurrentHashMap<>();
+    private Queue<Runnable> pendingTasks = new LinkedList<>();
 
     public Worker(int workerId) {
         this.workerId = workerId;
@@ -35,8 +33,9 @@ public class Worker extends Thread {
     @Override
     public void run() {
         while(running) {
+            Runnable task = null;
             synchronized (this) {
-                while(task == null && running) {
+                while(pendingTasks.isEmpty() && running) {
                     try {
                         wait();
                     } catch (InterruptedException e) {
@@ -45,6 +44,7 @@ public class Worker extends Thread {
                     }
                 }
                 if (!running) break;
+                task = pendingTasks.poll();
                 try {
                     task.run();
                 } catch (Exception e) {
@@ -55,8 +55,9 @@ public class Worker extends Thread {
             }
         }
     }
+
     public synchronized void receiveTask(Runnable task) {
-        this.task = task;
+        pendingTasks.add(task);
         notify();
     }
 
