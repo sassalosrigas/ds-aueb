@@ -97,7 +97,14 @@ public class Master{
         return Math.abs(storeName.hashCode()) % numOfWorkers;
     }
 
-//trying mapreduce
+    public static List<Integer> getWorkerIndicesForStore(String storeName, int numOfWorkers) {
+        int mainIndex = Math.abs(storeName.hashCode()) % numOfWorkers;
+        int replicaIndex = (mainIndex + 1) % numOfWorkers; 
+        return Arrays.asList(mainIndex, replicaIndex);
+    }
+
+
+    //trying mapreduce
     public Map<String, Integer> aggregateProductSales(String storeName) {
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
         for (Worker worker : workers) {
