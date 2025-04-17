@@ -120,20 +120,26 @@ public class ActionForWorkers extends Thread{
             String operation = request.getOperation();
             if(operation.equals("ADD_STORE")) {
                 Store store = (Store)request.getObject();
-                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
-                Worker worker = workers.get(assign);
-                worker.receiveTask(() -> {
-                    boolean added = worker.addStore(store);
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
+                Worker primary = workers.get(assign.get(0));
+                primary.receiveTask(() -> {
+                    boolean added = primary.addStore(store);
                     try {
-                        if(added){
+                        if (added) {
                             out.writeObject(store);
-                        }else{
+                        } else {
                             out.writeObject("Store is already registered");
                         }
                         out.flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                });
+
+                // update replica
+                Worker replica = workers.get(assign.get(1));
+                replica.receiveTask(() -> {
+                    replica.addStore(store);
                 });
             }else if(operation.equals("ADD_PRODUCT")) {
                 System.out.println("product");

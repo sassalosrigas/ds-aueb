@@ -97,12 +97,20 @@ public class Master{
         return Math.abs(storeName.hashCode()) % numOfWorkers;
     }
 
-    /*
+    public static List<Integer> getWorkerIndicesForStore(String storeName, int numOfWorkers) {
+        int mainIndex = Math.abs(storeName.hashCode()) % numOfWorkers;
+        int replicaIndex = (mainIndex + 1) % numOfWorkers; 
+        return Arrays.asList(mainIndex, replicaIndex);
+    }
+
+
+    //trying mapreduce
     public Map<String, Integer> aggregateProductSales(String storeName) {
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
         for (Worker worker : workers) {
             mappedResults.addAll(worker.mapProductSales(storeName));
         }
+
         Map<String, Integer> results = new HashMap<>();
         for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
             results.put(entry.getKey(), entry.getValue());
@@ -110,67 +118,28 @@ public class Master{
         return results;
     }
 
-
-    public Map<String, Integer> reduceProductSales(String storeName) {
+    public Map<String, Integer> aggregateProductCategorySales() {
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
-        List<Thread> workerThreads = new ArrayList<>();
         for (Worker worker : workers) {
-            Thread t = new Thread(()-> {
-                synchronized (mappedResults) {
-                    mappedResults.addAll(worker.mapProductSales(storeName));
-                }
-            });
-            workerThreads.add(t);
-            t.start();
-        }
-        for (Thread t : workerThreads) {
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            mappedResults.addAll(worker.mapProductCategorySales());
         }
         Map<String, Integer> results = new HashMap<>();
-        synchronized (mappedResults){
-            for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
-                results.put(entry.getKey(), entry.getValue());
-            }
+        for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
+            results.merge(entry.getKey(), entry.getValue(), Integer::sum);
         }
         return results;
     }
 
-     */
-
-    public Map<String,Integer> reduceProductSales(String storeName) {
-        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = workers.parallelStream()
-                .flatMap(worker -> worker.mapProductSales(storeName).stream())
-                .collect(Collectors.toList());
-
-        return mappedResults.stream().collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
-    }
-
-    public Map<String, Integer> reduceProductCategorySales() {
-        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = workers.parallelStream()
-                .flatMap(worker -> worker.mapProductCategorySales().stream())
-                .collect(Collectors.toList());
-
-        return mappedResults.stream()
-                .collect(Collectors.toMap(
-                        AbstractMap.SimpleEntry::getKey,   // Product category (e.g., "pizza")
-                        AbstractMap.SimpleEntry::getValue, // Sales count
-                        Integer::sum               // Sum sales per category
-                ));
-    }
-
-    public Map<String,Integer> reduceShopCategorySales() {
-        List<AbstractMap.SimpleEntry<String,Integer>> mappedResults = workers.parallelStream().
-                flatMap(worker -> worker.mapShopCategorySales().stream()).collect(Collectors.toList());
-
-        return mappedResults.stream().collect(Collectors.toMap(
-                AbstractMap.SimpleEntry::getKey,
-                AbstractMap.SimpleEntry::getValue,
-                Integer::sum
-        ));
+    public Map<String, Integer> aggregateShopCategorySales() {
+        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
+        for (Worker worker : workers) {
+            mappedResults.addAll(worker.mapShopCategorySales());
+        }
+        Map<String, Integer> results = new HashMap<>();
+        for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
+            results.merge(entry.getKey(), entry.getValue(), Integer::sum);
+        }
+        return results;
     }
 
     public List<Store> filterStores(String category, double minRate, double maxRate, String priceCat) {
@@ -179,7 +148,5 @@ public class Master{
         ).stream()).collect(Collectors.toList());
         return mappedResults.stream().distinct().collect(Collectors.toList());
     }
-
-
 
 }
