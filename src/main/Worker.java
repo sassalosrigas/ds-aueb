@@ -56,6 +56,11 @@ public class Worker extends Thread {
         }
     }
 
+    public boolean ping() {
+        return true; // sendds life signal :)
+    }
+
+
     public synchronized void receiveTask(Runnable task) {
         pendingTasks.add(task);
         notify();

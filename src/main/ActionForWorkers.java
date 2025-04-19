@@ -122,78 +122,153 @@ public class ActionForWorkers extends Thread{
                 Store store = (Store)request.getObject();
                 List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
                 Worker primary = workers.get(assign.get(0));
-                primary.receiveTask(() -> {
-                    boolean added = primary.addStore(store);
-                    try {
-                        if (added) {
-                            out.writeObject(store);
-                        } else {
-                            out.writeObject("Store is already registered");
-                        }
-                        out.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-                // update replica
                 Worker replica = workers.get(assign.get(1));
-                replica.receiveTask(() -> {
-                    replica.addStore(store);
-                });
+                if(master.isAlive(primary)){
+                    primary.receiveTask(() -> {
+                        boolean added = primary.addStore(store);
+                        try {
+                            if (added) {
+                                out.writeObject(store);
+                            } else {
+                                out.writeObject("Store is already registered");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+                    // update replica
+
+                    replica.receiveTask(() -> {
+                        replica.addStore(store);
+                    });
+                }else{
+                    replica.receiveTask(() -> {
+                        boolean added = replica.addStore(store);
+                        try {
+                            if (added) {
+                                out.writeObject(store);
+                            } else {
+                                out.writeObject("Store is already registered");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
             }else if(operation.equals("ADD_PRODUCT")) {
                 System.out.println("product");
                 Store store = (Store) request.getObject();
                 Product product = (Product)request.getObject2();
                 System.out.println("Current store " + store.getStoreName());
-                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
-                Worker worker = workers.get(assign);
-                worker.receiveTask(() -> {
-                    boolean existed = worker.addProduct(store, product);
-                    try {
-                        if(existed){
-                            out.writeObject("Product " + product.getProductName() + " was set online");
-                        }else{
-                            out.writeObject("Product " + product.getProductName() + " was registered successfully");
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
+                Worker primary = workers.get(assign.get(0));
+                Worker replica = workers.get(assign.get(1));
+                if (master.isAlive(primary)) {
+                    primary.receiveTask(() -> {
+                        boolean existed = primary.addProduct(store, product);
+                        try {
+                            if(existed){
+                                out.writeObject("Product " + product.getProductName() + " was set online");
+                            }else{
+                                out.writeObject("Product " + product.getProductName() + " was registered successfully");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                        out.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+                    });
+                    //update replica
+
+                    replica.receiveTask(() -> {
+                        replica.addProduct(store, product);
+                    });
+                }else {
+                    replica.receiveTask(() -> {
+                        boolean existed = replica.addProduct(store, product);
+                        try {
+                            if(existed){
+                                out.writeObject("Product " + product.getProductName() + " was set online");
+                            }else {
+                                out.writeObject("Product " + product.getProductName() + " was registered successfully");
+                            }
+                            out.flush();
+                        }catch(IOException e){
+                            e.printStackTrace();
+                        }
+                    });
+                }
             } else if(operation.equals("REMOVE_PRODUCT")) {
                 Store store = (Store) request.getObject();
                 Product product = (Product) request.getObject2();
-                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
-                Worker worker = workers.get(assign);
-                worker.receiveTask(() -> {
-                    boolean removed = worker.removeProduct(store, product);
-                    try {
-                        if(removed){
-                            out.writeObject("Removed product " + product.getProductName() +  " from " + store.getStoreName());
-                        }else{
-                            out.writeObject("Product is already offline");
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
+                Worker primary = workers.get(assign.get(0));
+                Worker replica = workers.get(assign.get(1));
+                if (master.isAlive(primary)) {
+                    primary.receiveTask(() -> {
+                        boolean removed = primary.removeProduct(store, product);
+                        try {
+                            if(removed){
+                                out.writeObject("Removed product " + product.getProductName() +  " from " + store.getStoreName());
+                            }else{
+                                out.writeObject("Product is already offline");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                        out.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+                    });
+                    replica.receiveTask(() -> {
+                        replica.removeProduct(store, product);
+                    });
+                }else {
+                    replica.receiveTask(() -> {
+                        boolean removed = replica.removeProduct(store, product);
+                        try {
+                            if(removed){
+                                out.writeObject("Removed product " + product.getProductName() +  " from " + store.getStoreName());
+                            }else{
+                                out.writeObject("Product is already offline");
+                            }
+                        }catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    });
+                }
             }else if(operation.equals("MODIFY_STOCK")) {
                 String storeName = request.getName();
                 String productName = request.getName2();
                 int quantity = request.getNum();
-                int assign = Master.hashToWorker(storeName, workers.size());
-                Worker worker = workers.get(assign);
-                worker.receiveTask(() -> {
-                    worker.modifyStock(storeName, productName, quantity);
+                List<Integer> assign = Master.getWorkerIndicesForStore(storeName, workers.size());
+                Worker primary = workers.get(assign.get(0));
+                Worker replica = workers.get(assign.get(1));
+                if(master.isAlive(primary)) {
+                    primary.receiveTask(() -> {
+                    primary.modifyStock(storeName, productName, quantity);
                     try {
                         out.writeObject(storeName);
                         out.flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                });
+                    });
+                    replica.receiveTask(() -> {
+                        replica.modifyStock(storeName, productName, quantity);
+                    });
+                }else{
+                    replica.receiveTask(() -> {
+                        replica.modifyStock(storeName, productName, quantity);
+                    });
+                    try{
+                        out.writeObject(storeName);
+                        out.flush();
+                    }catch(IOException e){
+                        e.printStackTrace();
+                    }
+                }
             }else if(operation.equals("SHOW_STORES")) {
                 Customer customer = (Customer)request.getObject();
                 List<Store> stores = new ArrayList<Store>();
