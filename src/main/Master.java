@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Master{
@@ -147,6 +151,19 @@ public class Master{
                 category, minRate, maxRate, priceCat
         ).stream()).collect(Collectors.toList());
         return mappedResults.stream().distinct().collect(Collectors.toList());
+    }
+
+
+    public boolean isAlive(Worker worker) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            Future<Boolean> future = executor.submit(worker::ping);
+            return future.get(2, TimeUnit.SECONDS); // 2 sec grace periof
+        } catch (Exception e) {
+            return false; // mark dead
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
 }
