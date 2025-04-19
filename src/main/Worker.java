@@ -1,17 +1,15 @@
 package main;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static main.Master.getWorkerIndicesForStore;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Worker extends Thread {
     private final int workerId;
-    private List<Store> storeList = new ArrayList<>();
+    private List<Store> storeList = new CopyOnWriteArrayList<>();
     private Runnable task = null;
-    private Map<String, List<PendingPurchase>> pendingPurchases = new HashMap<>();
+    private Map<String, List<PendingPurchase>> pendingPurchases = new ConcurrentHashMap<>();
     private Queue<Runnable> pendingTasks = new LinkedList<>();
-    private boolean isAlive = true;
 
     public Worker(int workerId) {
         this.workerId = workerId;
@@ -32,13 +30,12 @@ public class Worker extends Thread {
         }
 
     }
-
     @Override
     public void run() {
         while(running) {
             Runnable task = null;
             synchronized (this) {
-                while(pendingTasks.isEmpty() && running) { //oso eisai energos kai den exeis tasks perimene
+                while(pendingTasks.isEmpty() && running) {
                     try {
                         wait();
                     } catch (InterruptedException e) {
@@ -47,9 +44,9 @@ public class Worker extends Thread {
                     }
                 }
                 if (!running) break;
-                task = pendingTasks.poll(); //bgale to prwto task apo th lista
+                task = pendingTasks.poll();
                 try {
-                    task.run();  //trekse to trexwn task
+                    task.run();
                 } catch (Exception e) {
                     System.err.println("Error running worker " + workerId);
                 } finally {
@@ -60,20 +57,11 @@ public class Worker extends Thread {
     }
 
     public boolean ping() {
-        return isAlive;
-    } //stelnei signal oti einai up
-
-
-
-    public int getWorkerId() {
-        return workerId;
+        return true; // sendds life signal :)
     }
 
+
     public synchronized void receiveTask(Runnable task) {
-        /*
-        molis erthei neo task balto sto telos ths listas gia na kraththei o proteraiothta
-        kai eidipoihse
-         */
         pendingTasks.add(task);
         notify();
     }
@@ -108,6 +96,56 @@ public class Worker extends Thread {
         return false;
     }
 
+    public boolean hasStore(String storeName) {
+        /*
+            Elegxos uparkshs katasthmatos sthn lista
+         */
+        for(Store store : storeList){
+            if(store.getStoreName().equals(storeName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasProduct(String storeName, String productName) {
+        /*
+            Elegxos uparkshs proiontos sthn lista
+         */
+        Store store = getStore(storeName);
+        if(store!=null){
+            for(Product product : store.getProducts()){
+                if(product.getProductName().equals(productName)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean buyProduct(Store store, Product product, int quantity) {
+
+        for(Store s: storeList){
+            if(s.getStoreName().equals(store.getStoreName())){
+                synchronized (s) {
+                    for (Product p : s.getProducts()) {
+                        if (p.getProductName().equals(product.getProductName())) {
+                            if (p.getAvailableAmount() >= quantity) {
+                                p.setAvailableAmount(p.getAvailableAmount() - quantity);
+                                p.addSales(quantity);
+                                if (p.getAvailableAmount() == 0) {
+                                    p.setOnline(false);
+                                }
+                                return true;
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     public synchronized boolean reserveProduct(Store store, Product product,Customer customer, int quantity) {
         /*
@@ -137,7 +175,7 @@ public class Worker extends Thread {
             apo akirwsh paraggelias
          */
         Store store = getStore(storeName);
-        if(store == null || !pendingPurchases.containsKey(storeName+username)) {
+        if(store == null || !pendingPurchases.containsKey(storeName)) {
             return false;
         }
         synchronized (store){   //Kleidwma store
@@ -158,33 +196,7 @@ public class Worker extends Thread {
         }
     }
 
-    public synchronized void syncStore(Store primaryStore) {
-        /*
-        Klaeitai apo ta replicas. vriskei to store pou exei idio onoma me tou primary
-        kai antigrafei ola ta stoixeia tou wste na einai updated meta apo kathe tropopoihsh
-         */
-        Store replicaStore = getStore(primaryStore.getStoreName());
-        if (replicaStore == null) return;
-
-        synchronized (replicaStore) {
-            for (Product primaryProduct : primaryStore.getProducts()) {
-                Product replicaProduct = replicaStore.getProduct(primaryProduct.getProductName());
-                if (replicaProduct != null) {
-                    replicaProduct.setAvailableAmount(primaryProduct.getAvailableAmount());
-                    replicaProduct.setTotalSales(primaryProduct.getTotalSales());
-                    replicaProduct.setOnline(primaryProduct.isOnline());
-                }
-            }
-
-            replicaStore.setStars(primaryStore.getStars());
-            replicaStore.calculatePriceCategory();
-        }
-    }
-
     public synchronized boolean completePurchase(String storeName, String username) {
-        /*
-        Katharise thn paraggelia apo tis pending kai oristikopoihse thn paraggelia
-         */
         Store store = getStore(storeName);
         if(store == null || !pendingPurchases.containsKey(storeName+username)) {
             return false;
@@ -209,26 +221,23 @@ public class Worker extends Thread {
     }
 
 
-    public synchronized void modifyStock(Store store, Product product, int quantity) {
-        /*
-        allakse thn diathesimh posothta enos proiontos
-         */
-        for(Store s: storeList){
-            if(s.equals(store)){
-                for(Product p : s.getProducts()){
-                    if(p.equals(product)){
-                        p.setAvailableAmount(quantity);
-                        System.out.println("Modified stock: " + p.getProductName() + " " + p.getAvailableAmount());
+    public synchronized void modifyStock(String storeName, String productName, int quantity) {
+        if(hasStore(storeName) && hasProduct(storeName, productName)){
+            Store store = getStore(storeName);
+            synchronized (store) {
+                for(Product product : store.getProducts()){
+                    if(product.getProductName().equals(productName)){
+                        product.setAvailableAmount(quantity);
                     }
                 }
+                System.out.println("Changed product " + productName + " from store " + store.getStoreName());
             }
+        }else{
+            System.out.println("Product does not exist");
         }
     }
 
     public boolean addProduct(Store store, Product product) {
-        /*
-        Vale neo proion sto store h kanto online an ipirxe idi
-         */
         for(Store s : storeList){
             if(s.equals(store)){
                 synchronized (s){
@@ -248,23 +257,7 @@ public class Worker extends Thread {
         return false;
     }
 
-    public synchronized String reactivateProduct(Store store, Product product) {
-        /*
-        Sinarthsh pou kanei ena proion pali online
-         */
-        for (Product p : store.getProducts()) {
-            if (p.getProductName().equals(product.getProductName())) {
-                p.setOnline(true);
-                p.setAvailableAmount(product.getAvailableAmount());
-            }
-        }
-        return "Reactivated product " + product.getProductName() + " from " + store.getStoreName();
-    }
-
     public boolean removeProduct(Store store, Product product) {
-        /*
-        Kane ena proion offline
-         */
         for(Store s : storeList){
             if(s.equals(store)){
                 synchronized (s){
@@ -281,18 +274,6 @@ public class Worker extends Thread {
         return false;
     }
 
-    public synchronized List<Product> getOfflineProducts(Store store) {
-        /*
-        Vres ta anenerga proionta
-         */
-        Store localStore = getStore(store.getStoreName());
-        if (localStore == null) return Collections.emptyList();
-
-        return localStore.getProducts().stream()
-                .filter(p -> !p.isOnline())
-                .collect(Collectors.toList());
-    }
-
     public Store getStore(String storeName) {
         for(Store store : storeList){
             if(store.getStoreName().equals(storeName)){
@@ -302,21 +283,17 @@ public class Worker extends Thread {
         return null;
     }
 
-    public List<Store> mapFilterStores(String category, double minRate, double maxRate, String priceCat, List<Worker> workers) {
-        /*
-        Map sinarthsh gia thn epistrofh katasthmatwn vash filtrwn
-         */
-        return storeList.stream()
-                .filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
-                .filter(store -> matchesFilter(store, category, minRate, maxRate, priceCat))
-                .collect(Collectors.toList());
+    public List<Store> mapFilterStores(String category, double minRate, double maxRate, String priceCat) {
+            List<Store> results = new ArrayList<>();
+            for(Store store : storeList){
+                if(matchesFilter(store, category, minRate, maxRate, priceCat)) {
+                    results.add(store);
+                }
+            }
+            return results;
     }
 
-
     public boolean matchesFilter(Store store, String category, double minRate, double maxRate, String priceCat) {
-        /*
-        Elegkse an ena katasthma tairiaze me ta filtra pou dinontai
-         */
         boolean result = true;
         if (category != null && !store.getFoodCategory().equalsIgnoreCase(category)) {
             return false;
@@ -333,9 +310,6 @@ public class Worker extends Thread {
 
 
     public void rateStore(Store store, int rating){
-        /*
-        Vazei vathmologia se ena katasthma
-         */
         for(Store s : storeList){
             if(s.getStoreName().equals(store.getStoreName())){
                 synchronized (s){
@@ -347,13 +321,11 @@ public class Worker extends Thread {
         }
     }
 
-    public List<Store> showAllStores(){return new ArrayList<>(storeList);
+    public List<Store> showAllStores(){
+        return new ArrayList<>(storeList);
     }
 
     public List<Store> showStores(Customer customer){
-        /*
-        Deikse ta katasthmata se apostash 5km apo enan pelath
-         */
         List<Store> stores = new ArrayList<>();
         for(Store store : storeList){
             if(isWithInRange(store, customer)){
@@ -365,10 +337,6 @@ public class Worker extends Thread {
 
 
     public boolean isWithInRange(Store store, Customer customer) {
-        /*
-        Sinarthsh pou epeksergazetai longitude/lattitude sintetagmenes gia na
-        vrei thn apostash metaksi duo shmeiwn
-         */
         double storeLat = store.getLatitude();
         double storeLong = store.getLongitude();
         double customerLat = customer.getLatitude();
@@ -395,61 +363,45 @@ public class Worker extends Thread {
         return distance <= 5.0;
     }
 
-    public boolean shouldIncludeStore(Worker worker,List<Worker> workers, String storeName) {
-        /*
-        Des ena prepei na simperilaveis ena katasthma an:
-        a)Tairiazei to id me tou primary
-        b)O primary exei skotothei kai iparxei replica
-         */
-        List<Integer> indices = getWorkerIndicesForStore(storeName, workers.size());
-        Worker primary = workers.get(indices.get(0));
 
-        return worker.getWorkerId() == primary.getWorkerId() ||
-                (!primary.isAlive() && worker.getWorkerId() == indices.get(1));
+    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductSales(String storeName) {
+        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
+        Store store = getStore(storeName);
+        if (store != null) {
+            for (Product product : store.getProducts()) {
+                results.add(new AbstractMap.SimpleEntry<>(
+                product.getProductName(),
+                product.getTotalSales()
+                ));
+            }
+        }
+        return results;
     }
 
-    public List<AbstractMap.SimpleEntry<String,Integer>> mapProductSales(String storeName, List<Worker> workers){
-        //Map sinarthsh gia na vrei ta proionta enos katasthmatos kai tis pwlhseis tou
-        return storeList.stream()
-                .filter(store -> store.getStoreName().equals(storeName))
-                .filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
-                .flatMap(store -> store.getProducts().stream()
-                        .map(p -> new AbstractMap.SimpleEntry<>(
-                                p.getProductName(),
-                                p.getTotalSales()
-                        ))
-                )
-                .collect(Collectors.toList());
+    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales() {
+        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
+        for (Store store : storeList) {
+            for (Product product : store.getProducts()) {
+                results.add(new AbstractMap.SimpleEntry<>(
+                        product.getProductType(),
+                        product.getTotalSales()
+                ));
+            }
+        }
+        return results;
     }
 
-    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales(List<Worker> workers, String productCategory) {
-        /*
-        Map sinarthsh gia na vrei ta katasthmata pou periexoun mia sigkekrimenh kathgoria proiontwn
-         */
-        return storeList.stream().
-                filter(store -> shouldIncludeStore(this, workers,store.getStoreName())).
-                flatMap(store -> store.getProducts().stream().
-                        filter(p -> p.getProductType().equalsIgnoreCase(productCategory))
-                        .map(p -> new AbstractMap.SimpleEntry<>(
-                                store.getStoreName(),p.getTotalSales()
-                        )))
-                .collect(Collectors.toList());
+    public List<AbstractMap.SimpleEntry<String, Integer>> mapShopCategorySales() {
+        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
+        for (Store store : storeList) {
+            for (Product product : store.getProducts()) {
+                results.add(new AbstractMap.SimpleEntry<>(
+                        store.getFoodCategory(),
+                        product.getTotalSales()
+                ));
+            }
+        }
+        return results;
     }
-
-    public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(List<Worker> workers, String foodCategory){
-        /*
-        Map sinarthsh gia na vrei ta katasthmata pou anhkoun se mia sigkekrimenh kathgoria katasthmatwn
-         */
-        return storeList.stream().
-                filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
-                .filter(store -> store.getFoodCategory().equalsIgnoreCase(foodCategory))
-                .flatMap(store->store.getProducts().stream().
-                        map(p -> new AbstractMap.SimpleEntry<>(
-                                store.getStoreName(),
-                                p.getTotalSales()
-                        ))).collect(Collectors.toList());
-    }
-
-
 }
 
