@@ -2,10 +2,7 @@ package main;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ActionForWorkers extends Thread{
     ObjectInputStream in;
@@ -296,18 +293,48 @@ public class ActionForWorkers extends Thread{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }else if(operation.equals("SHOW_ALL_STORES")) {
-                List<Store> stores = new ArrayList<Store>();
-                List<Thread> workerThreads = new ArrayList<>();
-                for (Worker worker : workers) {
-                    Thread t = new Thread(() -> {
-                        synchronized (stores) {
-                            stores.addAll(worker.showAllStores());
+            }else if(operation.equals("BUY_PRODUCT")) {
+                Product product = (Product)request.getObject();
+                Store store = (Store)request.getObject2();
+                int quantity = request.getNum();
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
+                Worker primary = workers.get(assign.get(0));
+                Worker replica = workers.get(assign.get(1));
+                if (master.isAlive(primary)) {
+                    primary.receiveTask(() -> {
+                        boolean completed = primary.buyProduct(store, product, quantity);
+                        try {
+                            if (completed) {
+                                out.writeObject(store);
+                            } else {
+                                out.writeObject("There isn't enough available quantity");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
                     });
-                    workerThreads.add(t);
-                    t.start();
+                    replica.receiveTask(() -> {
+                        replica.buyProduct(store, product, quantity);
+                    });
+                }else {
+                    replica.receiveTask(() -> {
+                        boolean completed = replica.buyProduct(store, product, quantity);
+                        try {
+                            if (completed) {
+                                out.writeObject(store);
+                            } else {
+                                out.writeObject("There isn't enough available quantity");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
                 }
+            }else if(operation.equals("SHOW_ALL_STORES")) {
+                List<Store> stores = new ArrayList<Store>();
+                List<Thread> workerThreads = getThreads(stores);
                 for (Thread t : workerThreads) {
                     try {
                         t.join();
@@ -332,48 +359,83 @@ public class ActionForWorkers extends Thread{
             }else if(operation.equals("APPLY_RATING")){
                 Store store = (Store)request.getObject();
                 int rating = request.getNum();
-                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
-                Worker worker = workers.get(assign);
-                worker.receiveTask(() -> {
-                    worker.rateStore(store, rating);
-                    try{
-                        out.writeObject("Successful");
-                        out.flush();
-                    }catch(IOException e){
-                        throw new RuntimeException(e);
-                    }
-                });
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
+                Worker primary = workers.get(assign.get(0));
+                Worker replica = workers.get(assign.get(1));
+                if (master.isAlive(primary)) {
+                    primary.receiveTask(() -> {
+                        primary.rateStore(store, rating);
+                        try {
+                            out.writeObject("Successful");
+                            out.flush();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                    replica.receiveTask(() -> {
+                        replica.rateStore(store, rating);
+                    });
+                }else {
+                    replica.receiveTask(() -> {
+                        replica.rateStore(store, rating);
+                        try{
+                            out.writeObject("Successful");
+                            out.flush();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
             }else if (operation.equals("PRODUCT_SALES")) {
                 String storeName = (String) request.getName();
-                Map<String, Integer> results = this.master.reduceProductSales(storeName);
+                Map<String, Integer> results = this.master.aggregateProductSales(storeName);
                 out.writeObject(results);
             }else if (operation.equals("PRODUCT_CATEGORY_SALES")) {
-                Map<String, Integer> results = this.master.reduceProductCategorySales();
+                Map<String, Integer> results = this.master.aggregateProductCategorySales();
                 out.writeObject(results);
             }else if (operation.equals("SHOP_CATEGORY_SALES")) {
-                Map<String, Integer> results = this.master.reduceShopCategorySales();
+                Map<String, Integer> results = this.master.aggregateShopCategorySales();
                 out.writeObject(results);
-            }
-            else if(operation.equals("RESERVE_PRODUCT")){
+            }else if(operation.equals("RESERVE_PRODUCT")){
                 Store store = (Store)request.getObject2();
                 Product product = (Product) request.getObject();
                 Customer customer = (Customer) request.getObject3();
                 int quantity = request.getNum();
-                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
-                Worker worker = workers.get(assign);
-                worker.receiveTask(() -> {
-                    boolean reserved = worker.reserveProduct(store, product, customer, quantity);
-                    try{
-                        if(reserved){
-                            out.writeObject(new Customer.ProductOrder(product.getProductName(), quantity));
-                        }else{
-                            out.writeObject("Reservation failed");
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
+                Worker primary = workers.get(assign.get(0));
+                Worker replica = workers.get(assign.get(1));
+                if (master.isAlive(primary)) {
+                    primary.receiveTask(() -> {
+                        boolean reserved = primary.reserveProduct(store, product, customer, quantity);
+                        try {
+                            if (reserved) {
+                                out.writeObject(new Customer.ProductOrder(product.getProductName(), quantity));
+                            } else {
+                                out.writeObject("Reservation failed");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                        out.flush();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                    });
+                    replica.receiveTask(() -> {
+                        replica.buyProduct(store, product, quantity);
+                    });
+                }else {
+                    replica.receiveTask(() -> {
+                        boolean reserved = replica.buyProduct(store, product, quantity);
+                        try {
+                            if (reserved) {
+                                out.writeObject(new Customer.ProductOrder(product.getProductName(), quantity));
+                            } else {
+                                out.writeObject("Reservation failed");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
             }else if(operation.equals("COMPLETE_PURCHASE")){
                 Store store = (Store)request.getObject();
                 Customer customer = (Customer) request.getObject2();
@@ -414,6 +476,25 @@ public class ActionForWorkers extends Thread{
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
+
+    private List<Thread> getThreads(List<Store> stores) {
+        Set<String> storeNames = Collections.synchronizedSet(new HashSet<>());
+        List<Thread> workerThreads = new ArrayList<>();
+        for (Worker worker : workers) {
+            Thread t = new Thread(() -> {
+                List<Store> workerStores = worker.showAllStores();
+                synchronized (stores) {
+                    for (Store store : workerStores) {
+                        if (storeNames.add(store.getStoreName())) {
+                            stores.add(store);
+                        }
+                    }                        }
+            });
+            workerThreads.add(t);
+            t.start();
+        }
+        return workerThreads;
     }
 
 }
