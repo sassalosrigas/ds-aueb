@@ -8,12 +8,17 @@ public class Main {
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         new Master();      //Arxikopoihsh kai run Master server
-        System.out.println("Choose mode: (1) manager, (2) client, (3) Exit");
-        int mode = in.nextInt();
         Manager.addStore(new Scanner("src/stores/store.json"));  //Arxikopoihsh stores me thn ekkinhsh
         Manager.addStore(new Scanner("src/stores/store2.json"));
         Manager.addStore(new Scanner("src/stores/store3.json"));
+        int mode;
         do {
+            System.out.println("Choose mode: (1) manager, (2) client, (3) Exit");
+            mode = in.nextInt();
+            if(mode == 3){
+                System.out.println("ei");
+                break;
+            }
             if (mode == 1) {
                 //Console menu leitourgias manager
                 System.out.println("Now working in manager mode");
@@ -91,10 +96,7 @@ public class Main {
                 }
 
             }
-            System.out.println("Choose mode: (1) manager, (2) client, (3) Exit");
-            mode = in.nextInt();
-        }while(mode != 3);
-
+        }while(true);
         in.close();
 
     }

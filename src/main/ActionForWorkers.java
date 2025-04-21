@@ -2,7 +2,10 @@ package main;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ActionForWorkers extends Thread{
     ObjectInputStream in;
@@ -262,10 +265,10 @@ public class ActionForWorkers extends Thread{
                     try{
                         out.writeObject(storeName);
                         out.flush();
-                    }catch(IOException e){
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }
+                });
             }else if(operation.equals("SHOW_STORES")) {
                 Customer customer = (Customer)request.getObject();
                 List<Store> stores = new ArrayList<Store>();
