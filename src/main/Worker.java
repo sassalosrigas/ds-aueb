@@ -1,14 +1,13 @@
 package main;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class Worker extends Thread {
     private final int workerId;
-    private List<Store> storeList = new CopyOnWriteArrayList<>();
+    private List<Store> storeList = new ArrayList<>();
     private Runnable task = null;
-    private Map<String, List<PendingPurchase>> pendingPurchases = new ConcurrentHashMap<>();
+    private Map<String, List<PendingPurchase>> pendingPurchases = new HashMap<>();
     private Queue<Runnable> pendingTasks = new LinkedList<>();
 
     public Worker(int workerId) {
@@ -30,6 +29,7 @@ public class Worker extends Thread {
         }
 
     }
+
     @Override
     public void run() {
         while(running) {
@@ -118,29 +118,6 @@ public class Worker extends Thread {
         return false;
     }
 
-    public boolean buyProduct(Store store, Product product, int quantity) {
-
-        for(Store s: storeList){
-            if(s.getStoreName().equals(store.getStoreName())){
-                synchronized (s) {
-                    for (Product p : s.getProducts()) {
-                        if (p.getProductName().equals(product.getProductName())) {
-                            if (p.getAvailableAmount() >= quantity) {
-                                p.setAvailableAmount(p.getAvailableAmount() - quantity);
-                                p.addSales(quantity);
-                                if (p.getAvailableAmount() == 0) {
-                                    p.setOnline(false);
-                                }
-                                return true;
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
 
     public synchronized boolean reserveProduct(Store store, Product product,Customer customer, int quantity) {
         /*

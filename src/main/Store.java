@@ -78,6 +78,14 @@ public class Store implements Serializable {
         }
     }
 
+    public int getTotalSales(){
+        int total = 0;
+        for(Product product: products){
+            total += product.getTotalSales();
+        }
+        return total;
+    }
+
     public void applyRating(int rating){
         double total = stars * noOfVotes + rating;
         this.stars = total/ (noOfVotes + 1);

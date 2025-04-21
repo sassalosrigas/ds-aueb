@@ -94,6 +94,14 @@ public class Customer implements Serializable {
                     List<ProductOrder> cart = new ArrayList<>(); //Lista pou krataei apothikeumeno to kalathi ths paraggelias
                     boolean purchasing = true;
                     while(purchasing){
+                        if(cart.isEmpty()){     //se kathe epanalhpsh tiponei to torino kalathi paraggelias
+                            System.out.println("No pruducts exist in the cart yet");
+                        }else{
+                            System.out.println("Current cart: ");
+                            for(ProductOrder order : cart){
+                                System.out.println(order.toString());
+                            }
+                        }
                         System.out.println("Choose product");
                         ArrayList<Product> products = new ArrayList<>();
                         for(Product product : store.getProducts()){    //Apothikeuei ta online proionta mono

@@ -215,25 +215,6 @@ public class ActionForWorkers extends Thread{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }else if(operation.equals("BUY_PRODUCT")) {
-                Product product = (Product)request.getObject();
-                Store store = (Store)request.getObject2();
-                int quantity = request.getNum();
-                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
-                Worker worker = workers.get(assign);
-                worker.receiveTask(() -> {
-                    boolean completed = worker.buyProduct(store, product, quantity);
-                    try{
-                        if(completed){
-                            out.writeObject(store);
-                        }else{
-                            out.writeObject("There isn't enough available quantity");
-                        }
-                        out.flush();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
             }else if(operation.equals("SHOW_ALL_STORES")) {
                 List<Store> stores = new ArrayList<Store>();
                 List<Thread> workerThreads = new ArrayList<>();
@@ -291,7 +272,8 @@ public class ActionForWorkers extends Thread{
             }else if (operation.equals("SHOP_CATEGORY_SALES")) {
                 Map<String, Integer> results = this.master.aggregateShopCategorySales();
                 out.writeObject(results);
-            }else if(operation.equals("RESERVE_PRODUCT")){
+            }
+            else if(operation.equals("RESERVE_PRODUCT")){
                 Store store = (Store)request.getObject2();
                 Product product = (Product) request.getObject();
                 Customer customer = (Customer) request.getObject3();
