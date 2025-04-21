@@ -222,15 +222,17 @@ public class Master{
 
 
     public boolean isAlive(Worker worker) {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        final boolean[] result = {false};
+        Thread t = new Thread(() -> {
+            result[0] = worker.ping();
+        });
+        t.start();
         try {
-            Future<Boolean> future = executor.submit(worker::ping);
-            return future.get(2, TimeUnit.SECONDS); // 2 sec grace periof
-        } catch (Exception e) {
-            return false; // mark dead
-        } finally {
-            executor.shutdownNow();
+            t.join(2000); // 2 seconds timeout
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+        return !t.isAlive() && result[0];
     }
 
 }
