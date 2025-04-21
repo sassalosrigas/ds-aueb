@@ -326,8 +326,7 @@ public class Worker extends Thread {
         }
     }
 
-    public List<Store> showAllStores(){
-        return new ArrayList<>(storeList);
+    public List<Store> showAllStores(){return new ArrayList<>(storeList);
     }
 
     public List<Store> showStores(Customer customer){
