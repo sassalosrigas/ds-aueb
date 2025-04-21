@@ -10,6 +10,7 @@ public class Worker extends Thread {
     private Runnable task = null;
     private Map<String, List<PendingPurchase>> pendingPurchases = new ConcurrentHashMap<>();
     private Queue<Runnable> pendingTasks = new LinkedList<>();
+    private boolean isAlive = true;
 
     public Worker(int workerId) {
         this.workerId = workerId;
@@ -57,8 +58,12 @@ public class Worker extends Thread {
     }
 
     public boolean ping() {
-        return true; // sendds life signal :)
+        return isAlive; // sendds life signal :)
     }
+
+    public void kill(){ isAlive = false; }
+
+
 
 
     public synchronized void receiveTask(Runnable task) {

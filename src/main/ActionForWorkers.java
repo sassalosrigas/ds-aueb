@@ -258,14 +258,15 @@ public class ActionForWorkers extends Thread{
                 }else{
                     replica.receiveTask(() -> {
                         replica.modifyStock(storeName, productName, quantity);
+                        try{
+                            out.writeObject(storeName);
+                            out.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     });
-                    try{
-                        out.writeObject(storeName);
-                        out.flush();
-                    }catch(IOException e){
-                        e.printStackTrace();
-                    }
-                }
+
+                };
             }else if(operation.equals("SHOW_STORES")) {
                 Customer customer = (Customer)request.getObject();
                 List<Store> stores = new ArrayList<Store>();
@@ -292,45 +293,6 @@ public class ActionForWorkers extends Thread{
                     out.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
-            }else if(operation.equals("BUY_PRODUCT")) {
-                Product product = (Product)request.getObject();
-                Store store = (Store)request.getObject2();
-                int quantity = request.getNum();
-                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
-                Worker primary = workers.get(assign.get(0));
-                Worker replica = workers.get(assign.get(1));
-                if (master.isAlive(primary)) {
-                    primary.receiveTask(() -> {
-                        boolean completed = primary.buyProduct(store, product, quantity);
-                        try {
-                            if (completed) {
-                                out.writeObject(store);
-                            } else {
-                                out.writeObject("There isn't enough available quantity");
-                            }
-                            out.flush();
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-                    replica.receiveTask(() -> {
-                        replica.buyProduct(store, product, quantity);
-                    });
-                }else {
-                    replica.receiveTask(() -> {
-                        boolean completed = replica.buyProduct(store, product, quantity);
-                        try {
-                            if (completed) {
-                                out.writeObject(store);
-                            } else {
-                                out.writeObject("There isn't enough available quantity");
-                            }
-                            out.flush();
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
                 }
             }else if(operation.equals("SHOW_ALL_STORES")) {
                 List<Store> stores = new ArrayList<Store>();
@@ -419,11 +381,11 @@ public class ActionForWorkers extends Thread{
                         }
                     });
                     replica.receiveTask(() -> {
-                        replica.buyProduct(store, product, quantity);
+                        replica.reserveProduct(store, product,customer, quantity);
                     });
                 }else {
                     replica.receiveTask(() -> {
-                        boolean reserved = replica.buyProduct(store, product, quantity);
+                        boolean reserved = replica.reserveProduct(store, product, customer,quantity);
                         try {
                             if (reserved) {
                                 out.writeObject(new Customer.ProductOrder(product.getProductName(), quantity));
@@ -439,39 +401,81 @@ public class ActionForWorkers extends Thread{
             }else if(operation.equals("COMPLETE_PURCHASE")){
                 Store store = (Store)request.getObject();
                 Customer customer = (Customer) request.getObject2();
-                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
-                Worker worker = workers.get(assign);
-                worker.receiveTask(() -> {
-                    boolean completed = worker.completePurchase(store.getStoreName(), customer.getUsername());
-                    try {
-                        if (completed) {
-                            out.writeObject("Purchase successful");
-                        } else {
-                            out.writeObject("Purchase failed");
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
+                Worker primary = workers.get(assign.get(0));
+                Worker replica = workers.get(assign.get(1));
+                if (master.isAlive(primary)) {
+                    primary.receiveTask(() -> {
+                        boolean completed = primary.completePurchase(store.getStoreName(), customer.getUsername());
+                        try {
+                            if (completed) {
+                                out.writeObject("Purchase successful");
+                            } else {
+                                out.writeObject("Purchase failed");
+                            }
+                            out.flush();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
                         }
-                        out.flush();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                    });
+                    replica.receiveTask(() -> {
+                        replica.completePurchase(store.getStoreName(), customer.getUsername());
+                    });
+                }else {
+                    replica.receiveTask(() -> {
+                        boolean completed = replica.completePurchase(store.getStoreName(), customer.getUsername());
+                        try {
+                            if (completed) {
+                                out.writeObject("Purchase successful");
+                            } else {
+                                out.writeObject("Purchase failed");
+                            }
+                            out.flush();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+
             }else if(operation.equals("ROLLBACK_PURCHASE")){
                 Store store = (Store)request.getObject();
                 Customer customer = (Customer) request.getObject2();
-                int assign = Master.hashToWorker(store.getStoreName(), workers.size());
-                Worker worker = workers.get(assign);
-                worker.receiveTask(() -> {
-                    boolean reverted = worker.rollbackPurchase(store.getStoreName(), customer.getUsername());
-                    try {
-                        if(reverted){
-                            out.writeObject("Revert successful");
-                        }else{
-                            out.writeObject("Revert unsuccessful");
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
+                Worker primary = workers.get(assign.get(0));
+                Worker replica = workers.get(assign.get(1));
+                if (master.isAlive(primary)) {
+                    primary.receiveTask(() -> {
+                        boolean reverted = primary.rollbackPurchase(store.getStoreName(), customer.getUsername());
+                        try {
+                            if (reverted) {
+                                out.writeObject("Revert successful");
+                            } else {
+                                out.writeObject("Revert unsuccessful");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                        out.flush();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                    });
+                    replica.receiveTask(() -> {
+                        replica.rollbackPurchase(store.getStoreName(), customer.getUsername());
+                    });
+                }else {
+                    replica.receiveTask(() -> {
+                        boolean reverted = replica.rollbackPurchase(store.getStoreName(), customer.getUsername());
+                        try {
+                            if (reverted) {
+                                out.writeObject("Revert successful");
+                            } else {
+                                out.writeObject("Revert unsuccessful");
+                            }
+                            out.flush();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
+
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -496,5 +500,6 @@ public class ActionForWorkers extends Thread{
         }
         return workerThreads;
     }
+
 
 }
