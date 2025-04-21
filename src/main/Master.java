@@ -97,6 +97,15 @@ public class Master{
         return Math.abs(storeName.hashCode()) % numOfWorkers;
     }
 
+
+
+    public static List<Integer> getWorkerIndicesForStore(String storeName, int numOfWorkers) {
+        int mainIndex = Math.abs(storeName.hashCode()) % numOfWorkers;
+        int replicaIndex = (mainIndex + 1) % numOfWorkers;
+        return Arrays.asList(mainIndex, replicaIndex);
+    }
+
+
     /*
     public Map<String, Integer> aggregateProductSales(String storeName) {
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
@@ -180,6 +189,19 @@ public class Master{
         return mappedResults.stream().distinct().collect(Collectors.toList());
     }
 
+    public boolean isAlive(Worker worker) {
+        final boolean[] result = {false};
+        Thread t = new Thread(() -> {
+            result[0] = worker.ping();
+        });
+        t.start();
+        try {
+            t.join(2000); // 2 seconds timeout
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return !t.isAlive() && result[0];
+    }
 
 
 }
