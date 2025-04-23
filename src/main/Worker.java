@@ -350,6 +350,7 @@ public class Worker extends Thread {
         return results;
     }
 
+    /*
     public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales() {
         List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
         for (Store store : storeList) {
@@ -362,7 +363,6 @@ public class Worker extends Thread {
         }
         return results;
     }
-
     public List<AbstractMap.SimpleEntry<String, Integer>> mapShopCategorySales() {
         List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
         for (Store store : storeList) {
@@ -374,6 +374,23 @@ public class Worker extends Thread {
             }
         }
         return results;
+    }
+    */
+
+    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales() {
+        return storeList.stream().flatMap(store -> store.getProducts().stream()
+                .map(p -> new AbstractMap.SimpleEntry<>(
+                        p.getProductType(),p.getTotalSales()
+                )))
+                .collect(Collectors.toList());
+    }
+
+    public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(){
+        return storeList.stream().flatMap(store->store.getProducts().stream().
+                map(p -> new AbstractMap.SimpleEntry<>(
+                        store.getFoodCategory(),
+                        p.getTotalSales()
+                ))).collect(Collectors.toList());
     }
 }
 
