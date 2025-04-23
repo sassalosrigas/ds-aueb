@@ -188,12 +188,42 @@ public class Master{
                 ));
     }
 
+    /*
 
     public Map<String, Integer> aggregateShopCategorySales() {
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
         for (Worker worker : workers) {
             mappedResults.addAll(worker.mapShopCategorySales());
         }
+        Map<String, Integer> results = new HashMap<>();
+        for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
+            results.merge(entry.getKey(), entry.getValue(), Integer::sum);
+        }
+        return results;
+    }
+     */
+
+    public Map<String, Integer> aggregateShopCategorySales() {
+        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
+        List<Thread> workerThreads = new ArrayList<>();
+        for (Worker worker : workers) {
+            Thread t = new Thread(() -> {
+                List<AbstractMap.SimpleEntry<String, Integer>> workerResults = worker.mapShopCategorySales();
+                synchronized (mappedResults) {
+                    mappedResults.addAll(workerResults);
+                }
+            });
+            workerThreads.add(t);
+            t.start();
+        }
+        for (Thread t : workerThreads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
         Map<String, Integer> results = new HashMap<>();
         for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
             results.merge(entry.getKey(), entry.getValue(), Integer::sum);
