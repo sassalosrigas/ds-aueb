@@ -270,7 +270,8 @@ public class ActionForWorkers extends Thread{
             }else if(operation.equals("SHOW_STORES")) {
                 Customer customer = (Customer)request.getObject();
                 List<Store> stores = new ArrayList<Store>();
-                List<Thread> workerThreads = new ArrayList<>();
+                List<Thread> workerThreads = getThreads(stores,customer);
+                /*
                 for(Worker worker: workers) {
                     Thread t = new Thread(() -> {
                         List<Store> workerStores = worker.showStores(customer);
@@ -281,6 +282,7 @@ public class ActionForWorkers extends Thread{
                     workerThreads.add(t);
                     t.start();
                 }
+                */
                 for(Thread t : workerThreads) {
                     try {
                         t.join();
@@ -488,6 +490,25 @@ public class ActionForWorkers extends Thread{
         for (Worker worker : workers) {
             Thread t = new Thread(() -> {
                 List<Store> workerStores = worker.showAllStores();
+                synchronized (stores) {
+                    for (Store store : workerStores) {
+                        if (storeNames.add(store.getStoreName())) {
+                            stores.add(store);
+                        }
+                    }                        }
+            });
+            workerThreads.add(t);
+            t.start();
+        }
+        return workerThreads;
+    }
+
+    private List<Thread> getThreads(List<Store> stores, Customer customer) {
+        Set<String> storeNames = Collections.synchronizedSet(new HashSet<>());
+        List<Thread> workerThreads = new ArrayList<>();
+        for (Worker worker : workers) {
+            Thread t = new Thread(() -> {
+                List<Store> workerStores = worker.showStores(customer);
                 synchronized (stores) {
                     for (Store store : workerStores) {
                         if (storeNames.add(store.getStoreName())) {
