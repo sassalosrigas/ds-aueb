@@ -2,12 +2,15 @@ package main;
 
 import java.util.Scanner;
 
+import static java.lang.Thread.sleep;
+
 public class Main {
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Scanner in = new Scanner(System.in);
-        new Master();      //Arxikopoihsh kai run Master server
+        new Master();
+        sleep(2000);//Arxikopoihsh kai run Master server
         Manager.addStore(new Scanner("src/stores/store.json"));  //Arxikopoihsh stores me thn ekkinhsh
         Manager.addStore(new Scanner("src/stores/store2.json"));
         Manager.addStore(new Scanner("src/stores/store3.json"));

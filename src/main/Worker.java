@@ -345,45 +345,34 @@ public class Worker extends Thread {
         return distance <= 5.0;
     }
 
-
-    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductSales(String storeName) {
-        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
-        Store store = getStore(storeName);
-        if (store != null) {
-            for (Product product : store.getProducts()) {
-                results.add(new AbstractMap.SimpleEntry<>(
-                product.getProductName(),
-                product.getTotalSales()
-                ));
-            }
-        }
-        return results;
+    public List<AbstractMap.SimpleEntry<String,Integer>> mapProductSales(String storeName){
+        return storeList.stream()
+                .filter(store -> store.getStoreName().equals(storeName))  // Only keep matching store
+                .flatMap(store -> store.getProducts().stream()
+                        .map(p -> new AbstractMap.SimpleEntry<>(
+                                p.getProductName(),
+                                p.getTotalSales()  // Emit actual sales numbers
+                        ))
+                )
+                .collect(Collectors.toList());
     }
+
+
 
     public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales() {
-        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
-        for (Store store : storeList) {
-            for (Product product : store.getProducts()) {
-                results.add(new AbstractMap.SimpleEntry<>(
-                        product.getProductType(),
-                        product.getTotalSales()
-                ));
-            }
-        }
-        return results;
+        return storeList.stream().flatMap(store -> store.getProducts().stream()
+                .map(p -> new AbstractMap.SimpleEntry<>(
+                        p.getProductType(),p.getTotalSales()
+                )))
+                .collect(Collectors.toList());
     }
 
-    public List<AbstractMap.SimpleEntry<String, Integer>> mapShopCategorySales() {
-        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
-        for (Store store : storeList) {
-            for (Product product : store.getProducts()) {
-                results.add(new AbstractMap.SimpleEntry<>(
+    public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(){
+        return storeList.stream().flatMap(store->store.getProducts().stream().
+                map(p -> new AbstractMap.SimpleEntry<>(
                         store.getFoodCategory(),
-                        product.getTotalSales()
-                ));
-            }
-        }
-        return results;
+                        p.getTotalSales()
+                ))).collect(Collectors.toList());
     }
 }
 
