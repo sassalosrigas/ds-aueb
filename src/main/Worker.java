@@ -259,6 +259,20 @@ public class Worker extends Thread {
         return false;
     }
 
+    public synchronized String reactivateProduct(Store store, Product product) {
+        Store localStore = getStore(store.getStoreName());
+        if (localStore == null) return "Store not found";
+
+        for (Product p : localStore.getProducts()) {
+            if (p.getProductName().equals(product.getProductName())) {
+                p.setOnline(true);
+                p.setAvailableAmount(product.getAvailableAmount());
+                return "Reactivated product: " + p.getProductName();
+            }
+        }
+        return "Product not found";
+    }
+
     public boolean removeProduct(Store store, Product product) {
         for(Store s : storeList){
             if(s.equals(store)){
@@ -274,6 +288,15 @@ public class Worker extends Thread {
             }
         }
         return false;
+    }
+
+    public synchronized List<Product> getOfflineProducts(Store store) {
+        Store localStore = getStore(store.getStoreName());
+        if (localStore == null) return Collections.emptyList();
+
+        return localStore.getProducts().stream()
+                .filter(p -> !p.isOnline())
+                .collect(Collectors.toList());
     }
 
     public Store getStore(String storeName) {

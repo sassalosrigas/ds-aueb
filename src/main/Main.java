@@ -14,6 +14,10 @@ public class Main {
         Manager.addStore(new Scanner("src/stores/store.json"));  //Arxikopoihsh stores me thn ekkinhsh
         Manager.addStore(new Scanner("src/stores/store2.json"));
         Manager.addStore(new Scanner("src/stores/store3.json"));
+        Manager.addStore(new Scanner("src/stores/store4.json"));
+        Manager.addStore(new Scanner("src/stores/store5.json"));
+        Manager.addStore(new Scanner("src/stores/store6.json"));
+        Manager.addStore(new Scanner("src/stores/store7.json"));
         int mode;
         do {
             System.out.println("Choose mode: (1) manager, (2) client, (3) Exit");

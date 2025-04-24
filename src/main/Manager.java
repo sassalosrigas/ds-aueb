@@ -4,10 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class Manager{
 
@@ -123,57 +120,89 @@ public class Manager{
     }
 
 
-        public static void addProductToStore(Scanner input){
-        /*
-            Prosthiki proiontos se katasthma h thesimo enos hdh uparxontos offline
-            proiontos se online
-         */
-        try{
-            try{
-                Socket socket = new Socket("localhost", 8080);
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
-                out.flush();
-                Object response = in.readObject();
-                if(response instanceof ArrayList){
-                    ArrayList<Store> stores = (ArrayList<Store>) response;
-                    System.out.println("Choose store to add product to: ");
-                    for(int i = 0;i<stores.size();i++){
-                        System.out.println(i+1+ ". " + stores.get(i).getStoreName());
-                    }
-                    System.out.println("0. Exit");
-                    int choice = input.nextInt();
-                    if(choice >= 1 && choice <= stores.size()){
-                        Store store = stores.get(choice-1);
-                        input.nextLine();
-                        Product product = addProduct(input);
-                        out.writeObject(new WorkerFunctions("ADD_PRODUCT",store, product));
-                        out.flush();
-                        Object response2 = in.readObject();
-                        if(response2 instanceof Product){
-                            System.out.println("Server response: " + ((Product) response2).getProductName());
-                        }else{
-                            System.out.println(response2);
-                        }
-                    }else if(choice != 0){
-                        System.out.println("Invalid input");
-                    }
-                    out.close();
-                    in.close();
-                    socket.close();
+    public static void addProductToStore(Scanner input) {
+        try {
+            Socket socket = new Socket("localhost", 8080);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
+            // Get all stores
+            out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
+            out.flush();
+            Object response = in.readObject();
+
+            if (response instanceof ArrayList) {
+                ArrayList<Store> stores = (ArrayList<Store>) response;
+
+                // Store selection
+                System.out.println("Choose store to add product to: ");
+                for (int i = 0; i < stores.size(); i++) {
+                    System.out.println(i + 1 + ". " + stores.get(i).getStoreName());
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.out.println("0. Exit");
+                int storeChoice = input.nextInt();
+                input.nextLine(); // Consume newline
+
+                if (storeChoice >= 1 && storeChoice <= stores.size()) {
+                    Store store = stores.get(storeChoice - 1);
+
+                    // Get offline products
+                    out.writeObject(new WorkerFunctions("GET_OFFLINE_PRODUCTS", store));
+                    out.flush();
+                    Object offlineResponse = in.readObject();
+
+                    if (offlineResponse instanceof List) {
+                        List<Product> offlineProducts = (List<Product>) offlineResponse;
+
+                        if (!offlineProducts.isEmpty()) {
+                            System.out.println("\nChoose offline product to reactivate (0 to add new):");
+                            for (int i = 0; i < offlineProducts.size(); i++) {
+                                Product p = offlineProducts.get(i);
+                                System.out.printf("%d. %s (%s)\n",
+                                        i + 1, p.getProductName(), p.getProductType());
+                            }
+
+                            int productChoice = input.nextInt();
+                            input.nextLine(); // Consume newline
+
+                            if (productChoice > 0 && productChoice <= offlineProducts.size()) {
+                                // Reactivate existing product
+                                Product toReactivate = offlineProducts.get(productChoice - 1);
+                                toReactivate.setOnline(true);
+
+                                // Get updated stock
+                                System.out.println("Enter new available amount:");
+                                int newAmount = input.nextInt();
+                                input.nextLine(); // Consume newline
+                                toReactivate.setAvailableAmount(newAmount);
+
+                                out.writeObject(new WorkerFunctions("REACTIVATE_PRODUCT", store, toReactivate));
+                                out.flush();
+                                Object reactivationResponse = in.readObject();
+                                System.out.println("Product reactivated: " + reactivationResponse);
+                                return;
+                            } else if (productChoice != 0) {
+                                System.out.println("Invalid choice, creating new product");
+                            }
+                        }
+                    }
+
+                    // Create new product
+                    System.out.println("\nCreating new product for " + store.getStoreName());
+                    Product product = addProduct(input);
+                    out.writeObject(new WorkerFunctions("ADD_PRODUCT", store, product));
+                    out.flush();
+                    Object response2 = in.readObject();
+                    System.out.println("Server response: " + response2);
+                }
             }
 
-        } catch (java.util.InputMismatchException e) {
-            System.out.println("Invalid input. Please enter the correct data type.");
-        } catch (java.util.NoSuchElementException e) {
-            System.out.println("No input found. Please provide all required inputs.");
+            out.close();
+            in.close();
+            socket.close();
         } catch (Exception e) {
-            System.out.println("An unexpected error occurred: " + e.getMessage());
+            System.out.println("An error occurred: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
