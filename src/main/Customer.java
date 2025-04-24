@@ -82,12 +82,11 @@ public class Customer implements Serializable {
             Object response = in.readObject();
             if(response instanceof ArrayList){
                 System.out.println("Server response: ");
-                int counter = 1;
-                for(Store store : (ArrayList<Store>)response){
-                    System.out.println(counter +". "+ store.getStoreName());
-                    counter++;
-                }
+                int counter = 0;
                 System.out.println("Choose store");
+                for(Store store : (ArrayList<Store>)response){
+                    System.out.println(++counter +". "+ store.getStoreName());
+                }
                 int choice = input.nextInt();
                 if(choice >= 1 && choice <= ((ArrayList<?>) response).size()){
                     Store store = ((ArrayList<Store>) response).get(choice-1);
@@ -223,11 +222,12 @@ public class Customer implements Serializable {
             Object response = inp.readObject();
             if(response instanceof ArrayList){
                 System.out.println("Server response: ");
-                System.out.println("Choose store to rate");
+                System.out.println("Choose store to rate:");
                 int counter = 0;
                 for(Store store : (ArrayList<Store>)response){
                     System.out.println(++counter + " " + store.getStoreName());
                 }
+                System.out.println("0. Exit");
                 int choice = in.nextInt();
                 if(choice >= 1 && choice <= ((ArrayList<?>) response).size()){
                     Store store = ((ArrayList<Store>) response).get(choice-1);
@@ -240,6 +240,8 @@ public class Customer implements Serializable {
                     if(response2 instanceof String){
                         System.out.println(response2);
                     }
+                }else if(choice != 0){
+                    System.out.println("Invalid input");
                 }
                 out.close();
                 inp.close();

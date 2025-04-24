@@ -179,27 +179,21 @@ public class Worker extends Thread {
     }
 
     public synchronized void syncPurchase(Store primaryStore) {
-        // Find the corresponding store in this worker
         Store replicaStore = getStore(primaryStore.getStoreName());
         if (replicaStore == null) return;
 
         synchronized (replicaStore) {
-            // Sync products
             for (Product primaryProduct : primaryStore.getProducts()) {
                 Product replicaProduct = replicaStore.getProduct(primaryProduct.getProductName());
                 if (replicaProduct != null) {
-                    // Update all relevant fields
                     replicaProduct.setAvailableAmount(primaryProduct.getAvailableAmount());
                     replicaProduct.setTotalSales(primaryProduct.getTotalSales());
                     replicaProduct.setOnline(primaryProduct.isOnline());
-                    // Add other fields that need synchronization
                 }
             }
 
-            // Sync store-level data
             replicaStore.setStars(primaryStore.getStars());
             replicaStore.calculatePriceCategory();
-            // Add other store fields that need synchronization
         }
     }
 

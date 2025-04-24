@@ -85,19 +85,29 @@ public class Manager{
                 for(int i=0;i<stores.size();i++){
                     System.out.println(i+1 + ". " + stores.get(i).getStoreName());
                 }
+                System.out.println("0. Exit");
                 int choice = input.nextInt();
-                Store store = stores.get(choice-1);
-                for(int i=0;i<store.getProducts().size();i++){
-                    System.out.println(i+1 + ". " + store.getProducts().get(i).getProductName() + ": " + (store.getProducts().get(i).isOnline() ? "Online" : "Offline") );
-                }
-                System.out.println("Choose product to be removed: ");
-                choice = input.nextInt();
-                Product product = store.getProducts().get(choice-1);
-                out.writeObject(new WorkerFunctions("REMOVE_PRODUCT",store, product));
-                out.flush();
-                Object response2 = in.readObject();
-                if(response2 instanceof String){
-                    System.out.println("Server response: " + response2);
+                if(choice >= 1 && choice <= stores.size()){
+                    Store store = stores.get(choice-1);
+                    System.out.println("Choose product to be removed: ");
+                    for(int i=0;i<store.getProducts().size();i++){
+                        System.out.println(i+1 + ". " + store.getProducts().get(i).getProductName() + ": " + (store.getProducts().get(i).isOnline() ? "Online" : "Offline") );
+                    }
+                    System.out.println("0. Exit");
+                    choice = input.nextInt();
+                    if(choice >= 1 && choice <= store.getProducts().size()){
+                        Product product = store.getProducts().get(choice-1);
+                        out.writeObject(new WorkerFunctions("REMOVE_PRODUCT",store, product));
+                        out.flush();
+                        Object response2 = in.readObject();
+                        if(response2 instanceof String){
+                            System.out.println("Server response: " + response2);
+                        }
+                    }else if(choice != 0){
+                        System.out.println("Invalid input");
+                    }
+                }else if(choice != 0){
+                    System.out.println("Invalid input");
                 }
                 out.close();
                 in.close();
@@ -132,6 +142,7 @@ public class Manager{
                     for(int i = 0;i<stores.size();i++){
                         System.out.println(i+1+ ". " + stores.get(i).getStoreName());
                     }
+                    System.out.println("0. Exit");
                     int choice = input.nextInt();
                     if(choice >= 1 && choice <= stores.size()){
                         Store store = stores.get(choice-1);
@@ -145,6 +156,8 @@ public class Manager{
                         }else{
                             System.out.println(response2);
                         }
+                    }else if(choice != 0){
+                        System.out.println("Invalid input");
                     }
                     out.close();
                     in.close();
@@ -192,6 +205,7 @@ public class Manager{
                         for(Store store : stores){
                             System.out.println(++counter + ". " + store.getStoreName());
                         }
+                        System.out.println("0. Exit");
                         choice = input.nextInt();
                         if(choice >= 1 && choice <= stores.size()){
                             Store store = stores.get(choice-1);
@@ -201,9 +215,10 @@ public class Manager{
                             System.out.println("Sales for " +store.getStoreName()+": ");
                             results.forEach((product,sales)->
                                     System.out.printf("%-20s: %d%n", product, sales));
-                            break;
-
+                        }else if(choice != 0){
+                            System.out.println("Invalid input");
                         }
+                        break;
                     }
                 case 2:
                     out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES"));
@@ -263,22 +278,29 @@ public class Manager{
                 for(int i = 0;i<stores.size();i++){
                     System.out.println(i+1+ ". " + stores.get(i).getStoreName());
                 }
+                System.out.println("0 Exit");
                 int choice = input.nextInt();
-                Store store = stores.get(choice-1);
-                System.out.println("Choose product to modify quantity: ");
-                int counter = 0;
-                for(Product p: store.getProducts()){
-                    System.out.println(++counter + ": " + p.getProductName() + " Current quantity: " + p.getAvailableAmount());
-                }
-                choice = input.nextInt();
-                Product product = store.getProducts().get(choice-1);
-                System.out.println("Give new quantity:");
-                int quantity = input.nextInt();
-                out.writeObject(new WorkerFunctions("MODIFY_STOCK",store, product, quantity));
-                out.flush();
-                response = in.readObject();
-                if(response instanceof Store){
-                    System.out.println("Server response: " + ((Store) response).getStoreName());
+                if(choice >= 1 && choice <= stores.size()){
+                    Store store = stores.get(choice-1);
+                    System.out.println("Choose product to modify quantity: ");
+                    int counter = 0;
+                    for(Product p: store.getProducts()){
+                        System.out.println(++counter + ": " + p.getProductName() + " Current quantity: " + p.getAvailableAmount());
+                    }
+                    choice = input.nextInt();
+                    if(choice >= 1 && choice <= store.getProducts().size()){
+                        Product product = store.getProducts().get(choice-1);
+                        System.out.println("Give new quantity:");
+                        int quantity = input.nextInt();
+                        out.writeObject(new WorkerFunctions("MODIFY_STOCK",store, product, quantity));
+                        out.flush();
+                        response = in.readObject();
+                        if(response instanceof Store){
+                            System.out.println("Server response: " + ((Store) response).getStoreName());
+                        }
+                    }
+                }else if(choice!=0){
+                    System.out.println("Invalid input");
                 }
                 out.close();
                 in.close();
