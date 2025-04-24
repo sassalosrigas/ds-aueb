@@ -115,6 +115,16 @@ public class Store implements Serializable {
     public List<Product> getProducts() { return products; }
     public void setProducts(List<Product> products) { this.products = products; }
 
+    public Product getProduct(String productName) {
+        Product prod = null;
+        for(Product product : products){
+            if(product.getProductName().equals(productName)){
+                return product;
+            }
+        }
+        return prod;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

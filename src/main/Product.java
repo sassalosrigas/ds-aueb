@@ -66,6 +66,9 @@ public class Product implements Serializable {
     public int getTotalSales() {
         return totalSales;
     }
+    public void setTotalSales(int sales){
+        this.totalSales = sales;
+    }
 
     public void addSales(int quantity) {
         totalSales += quantity;
@@ -74,6 +77,7 @@ public class Product implements Serializable {
     public boolean isOnline() {
         return showOnline;
     }
+
 
     @Override
     public boolean equals(Object o) {

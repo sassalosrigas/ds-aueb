@@ -58,7 +58,7 @@ public class Worker extends Thread {
     }
 
     public boolean ping() {
-        return isAlive; // sendds life signal :)
+        return isAlive; // sends life signal :)
     }
 
     public void kill(){ isAlive = false; }
@@ -178,6 +178,31 @@ public class Worker extends Thread {
         }
     }
 
+    public synchronized void syncPurchase(Store primaryStore) {
+        // Find the corresponding store in this worker
+        Store replicaStore = getStore(primaryStore.getStoreName());
+        if (replicaStore == null) return;
+
+        synchronized (replicaStore) {
+            // Sync products
+            for (Product primaryProduct : primaryStore.getProducts()) {
+                Product replicaProduct = replicaStore.getProduct(primaryProduct.getProductName());
+                if (replicaProduct != null) {
+                    // Update all relevant fields
+                    replicaProduct.setAvailableAmount(primaryProduct.getAvailableAmount());
+                    replicaProduct.setTotalSales(primaryProduct.getTotalSales());
+                    replicaProduct.setOnline(primaryProduct.isOnline());
+                    // Add other fields that need synchronization
+                }
+            }
+
+            // Sync store-level data
+            replicaStore.setStars(primaryStore.getStars());
+            replicaStore.calculatePriceCategory();
+            // Add other store fields that need synchronization
+        }
+    }
+
     public synchronized boolean completePurchase(String storeName, String username) {
         Store store = getStore(storeName);
         if(store == null || !pendingPurchases.containsKey(storeName+username)) {
@@ -203,19 +228,16 @@ public class Worker extends Thread {
     }
 
 
-    public synchronized void modifyStock(String storeName, String productName, int quantity) {
-        if(hasStore(storeName) && hasProduct(storeName, productName)){
-            Store store = getStore(storeName);
-            synchronized (store) {
-                for(Product product : store.getProducts()){
-                    if(product.getProductName().equals(productName)){
-                        product.setAvailableAmount(quantity);
+    public synchronized void modifyStock(Store store, Product product, int quantity) {
+        for(Store s: storeList){
+            if(s.equals(store)){
+                for(Product p : s.getProducts()){
+                    if(p.equals(product)){
+                        p.setAvailableAmount(quantity);
+                        System.out.println("Modified stock: " + p.getProductName() + " " + p.getAvailableAmount());
                     }
                 }
-                System.out.println("Changed product " + productName + " from store " + store.getStoreName());
             }
-        }else{
-            System.out.println("Product does not exist");
         }
     }
 
@@ -346,7 +368,8 @@ public class Worker extends Thread {
 
     public List<AbstractMap.SimpleEntry<String,Integer>> mapProductSales(String storeName){
         return storeList.stream()
-                .filter(store -> store.getStoreName().equals(storeName))  // Only keep matching store
+                .filter(store -> store.getStoreName().equals(storeName))
+                .filter(store -> isPrimaryStore(store.getStoreName()))  // Only keep matching store
                 .flatMap(store -> store.getProducts().stream()
                         .map(p -> new AbstractMap.SimpleEntry<>(
                                 p.getProductName(),
@@ -359,7 +382,9 @@ public class Worker extends Thread {
 
 
     public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales() {
-        return storeList.stream().flatMap(store -> store.getProducts().stream()
+        return storeList.stream().
+                filter(store -> isPrimaryStore(store.getStoreName())).
+                flatMap(store -> store.getProducts().stream()
                 .map(p -> new AbstractMap.SimpleEntry<>(
                         p.getProductType(),p.getTotalSales()
                 )))
@@ -367,11 +392,19 @@ public class Worker extends Thread {
     }
 
     public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(){
-        return storeList.stream().flatMap(store->store.getProducts().stream().
+        return storeList.stream().
+                filter(store -> isPrimaryStore(store.getStoreName()))
+                .flatMap(store->store.getProducts().stream().
                 map(p -> new AbstractMap.SimpleEntry<>(
                         store.getFoodCategory(),
                         p.getTotalSales()
                 ))).collect(Collectors.toList());
+    }
+
+    public boolean isPrimaryStore(String storeName) {
+        int numWorkers  = Master.getWorkerNum();
+        List<Integer> assign = Master.getWorkerIndicesForStore(storeName, numWorkers);
+        return assign.get(0) == this.workerId;
     }
 }
 
