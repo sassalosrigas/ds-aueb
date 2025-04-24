@@ -11,6 +11,7 @@ public class Master{
     Socket socket;
     private final List<Worker> workers;
     private Properties config;
+    private static int workersSize;
 
     public Master(){
         this.workers = Collections.synchronizedList(new ArrayList<Worker>());
@@ -23,6 +24,7 @@ public class Master{
         }
 
         int workerCount = Integer.parseInt(config.getProperty("workerCount"));
+        workersSize = workerCount;
         for (int i = 0; i < workerCount; i++) {
             Worker worker = new Worker(i);
             worker.start();
@@ -34,6 +36,7 @@ public class Master{
         /*
             Dhmiourgia listas worker kai enarksh tou kathenos
          */
+        workersSize = workerCount;
         this.workers = Collections.synchronizedList(new ArrayList<>());
         for (int i = 0; i < workerCount; i++) {
             Worker worker = new Worker(i);
@@ -98,6 +101,9 @@ public class Master{
     }
 
 
+    public static int getWorkerNum(){
+        return workersSize;
+    }
 
     public static List<Integer> getWorkerIndicesForStore(String storeName, int numOfWorkers) {
         int mainIndex = Math.abs(storeName.hashCode()) % numOfWorkers;
@@ -202,6 +208,7 @@ public class Master{
         }
         return !t.isAlive() && result[0];
     }
+
 
 
 }

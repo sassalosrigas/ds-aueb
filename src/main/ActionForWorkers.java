@@ -236,30 +236,30 @@ public class ActionForWorkers extends Thread{
                     });
                 }
             }else if(operation.equals("MODIFY_STOCK")) {
-                String storeName = request.getName();
-                String productName = request.getName2();
+                Store store = (Store) request.getObject();
+                Product product = (Product) request.getObject2();
                 int quantity = request.getNum();
-                List<Integer> assign = Master.getWorkerIndicesForStore(storeName, workers.size());
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
                 Worker primary = workers.get(assign.get(0));
                 Worker replica = workers.get(assign.get(1));
                 if(master.isAlive(primary)) {
                     primary.receiveTask(() -> {
-                    primary.modifyStock(storeName, productName, quantity);
+                    primary.modifyStock(store, product, quantity);
                     try {
-                        out.writeObject(storeName);
+                        out.writeObject(store.getStoreName());
                         out.flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     });
                     replica.receiveTask(() -> {
-                        replica.modifyStock(storeName, productName, quantity);
+                        replica.modifyStock(store, product, quantity);
                     });
                 }else{
                     replica.receiveTask(() -> {
-                        replica.modifyStock(storeName, productName, quantity);
+                        replica.modifyStock(store, product, quantity);
                         try{
-                            out.writeObject(storeName);
+                            out.writeObject(store.getStoreName());
                             out.flush();
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -382,9 +382,12 @@ public class ActionForWorkers extends Thread{
                             throw new RuntimeException(e);
                         }
                     });
+                    /*
                     replica.receiveTask(() -> {
-                        replica.reserveProduct(store, product,customer, quantity);
+                        //replica.reserveProduct(store, product,customer, quantity);
                     });
+
+                     */
                 }else {
                     replica.receiveTask(() -> {
                         boolean reserved = replica.reserveProduct(store, product, customer,quantity);
@@ -412,6 +415,10 @@ public class ActionForWorkers extends Thread{
                         try {
                             if (completed) {
                                 out.writeObject("Purchase successful");
+                                Store updatedStore = primary.getStore(store.getStoreName());
+                                replica.receiveTask(() -> {
+                                    replica.syncPurchase(updatedStore);
+                                });
                             } else {
                                 out.writeObject("Purchase failed");
                             }
@@ -420,9 +427,11 @@ public class ActionForWorkers extends Thread{
                             throw new RuntimeException(e);
                         }
                     });
+                    /*
                     replica.receiveTask(() -> {
                         replica.completePurchase(store.getStoreName(), customer.getUsername());
                     });
+                     */
                 }else {
                     replica.receiveTask(() -> {
                         boolean completed = replica.completePurchase(store.getStoreName(), customer.getUsername());
@@ -459,9 +468,12 @@ public class ActionForWorkers extends Thread{
                             throw new RuntimeException(e);
                         }
                     });
+                    /*
                     replica.receiveTask(() -> {
                         replica.rollbackPurchase(store.getStoreName(), customer.getUsername());
                     });
+
+                     */
                 }else {
                     replica.receiveTask(() -> {
                         boolean reverted = replica.rollbackPurchase(store.getStoreName(), customer.getUsername());

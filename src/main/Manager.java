@@ -4,7 +4,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
 public class Manager{
 
@@ -79,34 +82,22 @@ public class Manager{
             if(response instanceof ArrayList){
                 ArrayList<Store> stores = (ArrayList<Store>) response;
                 System.out.println("Choose store to remove product from: ");
-                int counter = 0;
-                for(Store store : stores){
-                    System.out.println(++counter + ". " + store.getStoreName());
+                for(int i=0;i<stores.size();i++){
+                    System.out.println(i+1 + ". " + stores.get(i).getStoreName());
                 }
-                System.out.println("0. Exit");
                 int choice = input.nextInt();
-                if(choice >= 1 && choice <= stores.size()){
-                    Store store = stores.get(choice-1);
-                    System.out.println("Choose product to be removed: ");
-                    counter = 0;
-                    for(Product p: store.getProducts()){
-                        System.out.println(++counter + ". " + p.getProductName() + ": " + (p.isOnline() ? "Online" : "Offline"));
-                    }
-                    System.out.println("0. Exit");
-                    choice = input.nextInt();
-                    if(choice >= 1 && choice <= store.getProducts().size()){
-                        Product product = store.getProducts().get(choice-1);
-                        out.writeObject(new WorkerFunctions("REMOVE_PRODUCT",store, product));
-                        out.flush();
-                        Object response2 = in.readObject();
-                        if(response2 instanceof String){
-                            System.out.println("Server response: " + response2);
-                        }
-                    }else if(choice != 0){
-                        System.out.println("Invalid input");
-                    }
-                }else if(choice != 0){
-                    System.out.println("Invalid input");
+                Store store = stores.get(choice-1);
+                for(int i=0;i<store.getProducts().size();i++){
+                    System.out.println(i+1 + ". " + store.getProducts().get(i).getProductName() + ": " + (store.getProducts().get(i).isOnline() ? "Online" : "Offline") );
+                }
+                System.out.println("Choose product to be removed: ");
+                choice = input.nextInt();
+                Product product = store.getProducts().get(choice-1);
+                out.writeObject(new WorkerFunctions("REMOVE_PRODUCT",store, product));
+                out.flush();
+                Object response2 = in.readObject();
+                if(response2 instanceof String){
+                    System.out.println("Server response: " + response2);
                 }
                 out.close();
                 in.close();
@@ -122,111 +113,58 @@ public class Manager{
     }
 
 
-    public static void addProductToStore(Scanner input) {
-        try {
-            Socket socket = new Socket("localhost", 8080);
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-
-            out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
-            out.flush();
-            Object response = in.readObject();
-
-            if (response instanceof ArrayList) {
-                ArrayList<Store> stores = (ArrayList<Store>) response;
-
-                System.out.println("Choose store to add product to: ");
-                int counter = 0;
-                for(Store store : stores){
-                    System.out.println(++counter + ". " + store.getStoreName());
-                }
-                System.out.println("0. Exit");
-                int storeChoice = input.nextInt();
-                input.nextLine();
-
-                if (storeChoice >= 1 && storeChoice <= stores.size()) {
-                    Store store = stores.get(storeChoice - 1);
-
-                    /* emfanise kai ta anenerga proionta se periptwsh pou o manager thelei na
-                    ta kanei pali energa anti na kanei input neo antikeimeno
-                     */
-                    out.writeObject(new WorkerFunctions("GET_OFFLINE_PRODUCTS", store));
-                    out.flush();
-                    Object offlineResponse = in.readObject();
-
-                    if (offlineResponse instanceof List) {
-                        List<Product> offlineProducts = (List<Product>) offlineResponse;
-
-                        if (!offlineProducts.isEmpty()) {  //periptwsh pou iparxoun offline proionta
-                            System.out.println("\nChoose offline product to reactivate:");
-                            counter = 0;
-                            for (Product p : offlineProducts) {
-                                System.out.println(++counter + ". " + p.getProductName() + ": " + p.getProductType());
-                            }
-                            System.out.println(++counter + ". Add new product");
-                            System.out.println("0. Exit");
-                            int productChoice = input.nextInt();
-                            input.nextLine();
-
-                            if (productChoice > 0 && productChoice <= offlineProducts.size()) {
-
-                                Product toReactivate = offlineProducts.get(productChoice - 1);
-                                toReactivate.setOnline(true);
-
-                                System.out.println("Enter new available amount:");
-                                int newAmount = input.nextInt();
-                                input.nextLine();
-                                toReactivate.setAvailableAmount(newAmount);
-
-                                out.writeObject(new WorkerFunctions("REACTIVATE_PRODUCT", store, toReactivate));
-                                out.flush();
-                                Object reactivationResponse = in.readObject();
-                                System.out.println(reactivationResponse);
-                                return;
-                            }else if(productChoice == 0){
-                                System.out.println("\nCreating new product for " + store.getStoreName());
-                                Product product = addProduct(input);
-                                out.writeObject(new WorkerFunctions("ADD_PRODUCT", store, product));
-                                out.flush();
-                                Object response2 = in.readObject();
-                                System.out.println("Server response: " + response2);
-                            }else{
-                                System.out.println("Exiting process");
-                            }
-                        }else{  //periptwsh pou den iparxoun offline proionta
-                            System.out.println("1. Add product");
-                            System.out.println("0. Exit");
-                            int choice = input.nextInt();
-                            input.nextLine();
-                            if(choice == 1){
-                                System.out.println("\nCreating new product for " + store.getStoreName());
-                                Product product = addProduct(input);
-                                out.writeObject(new WorkerFunctions("ADD_PRODUCT", store, product));
-                                out.flush();
-                                Object response2 = in.readObject();
-                                System.out.println("Server response: " + response2);
-                            }else{
-                                System.out.println("Exiting process");
-                            }
+        public static void addProductToStore(Scanner input){
+        /*
+            Prosthiki proiontos se katasthma h thesimo enos hdh uparxontos offline
+            proiontos se online
+         */
+        try{
+            try{
+                Socket socket = new Socket("localhost", 8080);
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
+                out.flush();
+                Object response = in.readObject();
+                if(response instanceof ArrayList){
+                    ArrayList<Store> stores = (ArrayList<Store>) response;
+                    System.out.println("Choose store to add product to: ");
+                    for(int i = 0;i<stores.size();i++){
+                        System.out.println(i+1+ ". " + stores.get(i).getStoreName());
+                    }
+                    int choice = input.nextInt();
+                    if(choice >= 1 && choice <= stores.size()){
+                        Store store = stores.get(choice-1);
+                        input.nextLine();
+                        Product product = addProduct(input);
+                        out.writeObject(new WorkerFunctions("ADD_PRODUCT",store, product));
+                        out.flush();
+                        Object response2 = in.readObject();
+                        if(response2 instanceof Product){
+                            System.out.println("Server response: " + ((Product) response2).getProductName());
+                        }else{
+                            System.out.println(response2);
                         }
                     }
+                    out.close();
+                    in.close();
+                    socket.close();
 
                 }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
 
-            out.close();
-            in.close();
-            socket.close();
+        } catch (java.util.InputMismatchException e) {
+            System.out.println("Invalid input. Please enter the correct data type.");
+        } catch (java.util.NoSuchElementException e) {
+            System.out.println("No input found. Please provide all required inputs.");
         } catch (Exception e) {
-            System.out.println("An error occurred: " + e.getMessage());
-            e.printStackTrace();
+            System.out.println("An unexpected error occurred: " + e.getMessage());
         }
     }
 
     public static void salesPerProduct(Scanner input){
-        /*
-            Methodos gia epilogh statistikou kai emfanish tou
-         */
         try {
             System.out.println("Choose Report Type");
             System.out.println("1. Sales per product in a store");
@@ -242,10 +180,8 @@ public class Manager{
 
             switch (choice) {
                 case 1:
-                    /*
-                    Dialakse katasthma kai epestrepse tis pwlhseis kathe proiontos tou
-                    sigkekrimenou katasthmatos
-                     */
+                    //System.out.println("Enter store name:");
+                    //String storeName = input.nextLine();
                     out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
                     out.flush();
                     Object response = in.readObject();
@@ -256,7 +192,6 @@ public class Manager{
                         for(Store store : stores){
                             System.out.println(++counter + ". " + store.getStoreName());
                         }
-                        System.out.println("0. Exit");
                         choice = input.nextInt();
                         if(choice >= 1 && choice <= stores.size()){
                             Store store = stores.get(choice-1);
@@ -266,20 +201,12 @@ public class Manager{
                             System.out.println("Sales for " +store.getStoreName()+": ");
                             results.forEach((product,sales)->
                                     System.out.printf("%-20s: %d%n", product, sales));
-                            System.out.println("Total: " + results.values().stream().mapToInt(Integer::valueOf).sum());
-                        }else if(choice != 0){
-                            System.out.println("Invalid input");
+                            break;
+
                         }
-                        break;
                     }
                 case 2:
-                    /*
-                    Kane input kathgoria proiontos kai emfanise ta katasthmata pou thn periexoun
-                    kai poses pwlhseis exoun apo auth
-                     */
-                    System.out.println("Give product category");
-                    String prodCategory = input.nextLine();
-                    out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES", prodCategory));
+                    out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES"));
                     out.flush();
                     Map<String, Integer> productCatRes = (Map<String, Integer>) in.readObject();
                     System.out.println("Sales by Product Category: ");
@@ -288,13 +215,7 @@ public class Manager{
                     System.out.println("Total: "+ productCatRes.values().stream().mapToInt(Integer::intValue).sum());
                     break;
                 case 3:
-                    /*
-                    Kane input kathgoria katasthmatos kai emfanise ta katasthmata pou anhkoun se auth
-                    kai tis sinolikes pwlhseis kathe katasthmatos
-                     */
-                    System.out.println("Give shop category");
-                    String foodCategory = input.nextLine();
-                    out.writeObject(new WorkerFunctions("SHOP_CATEGORY_SALES", foodCategory));
+                    out.writeObject(new WorkerFunctions("SHOP_CATEGORY_SALES"));
                     out.flush();
                     Map<String, Integer> shopCatRes = (Map<String, Integer>) in.readObject();
                     System.out.println("Sales by Shop Category: ");
@@ -302,6 +223,19 @@ public class Manager{
                             System.out.printf("%-20s: %d%n", category, sales));
                     System.out.println("Total: "+ shopCatRes.values().stream().mapToInt(Integer::intValue).sum());
                     break;
+                    /*
+                case 3:
+                    String cat = input.nextLine();
+                    out.writeObject(new WorkerFunctions("SHOP_CATEGORY_SALES", cat));
+                    out.flush();
+                    Map<String, Integer> shopCatRes = (Map<String, Integer>) in.readObject();
+                    System.out.println("Sales by Shop Category: ");
+                    shopCatRes.forEach((category,sales)->
+                            System.out.printf("%-20s: %d%n", category, sales));
+                    System.out.println("Total: "+ shopCatRes.values().stream().mapToInt(Integer::intValue).sum());
+                    break;
+
+                     */
             }
 
             out.close();
@@ -326,33 +260,25 @@ public class Manager{
             if(response instanceof ArrayList){
                 ArrayList<Store> stores = (ArrayList<Store>) response;
                 System.out.println("Choose store: ");
-                int counter = 0;
-                for(Store store : stores){
-                    System.out.println(++counter + ". " + store.getStoreName());
+                for(int i = 0;i<stores.size();i++){
+                    System.out.println(i+1+ ". " + stores.get(i).getStoreName());
                 }
-                System.out.println("0 Exit");
                 int choice = input.nextInt();
-                if(choice >= 1 && choice <= stores.size()){
-                    Store store = stores.get(choice-1);
-                    System.out.println("Choose product to modify quantity: ");
-                    counter = 0;
-                    for(Product p: store.getProducts()){
-                        System.out.println(++counter + ": " + p.getProductName() + " Current quantity: " + p.getAvailableAmount());
-                    }
-                    choice = input.nextInt();
-                    if(choice >= 1 && choice <= store.getProducts().size()){
-                        Product product = store.getProducts().get(choice-1);
-                        System.out.println("Give new quantity:");
-                        int quantity = input.nextInt();
-                        out.writeObject(new WorkerFunctions("MODIFY_STOCK",store, product, quantity));
-                        out.flush();
-                        response = in.readObject();
-                        if(response instanceof Store){
-                            System.out.println("Server response: " + ((Store) response).getStoreName());
-                        }
-                    }
-                }else if(choice!=0){
-                    System.out.println("Invalid input");
+                Store store = stores.get(choice-1);
+                System.out.println("Choose product to modify quantity: ");
+                int counter = 0;
+                for(Product p: store.getProducts()){
+                    System.out.println(++counter + ": " + p.getProductName() + " Current quantity: " + p.getAvailableAmount());
+                }
+                choice = input.nextInt();
+                Product product = store.getProducts().get(choice-1);
+                System.out.println("Give new quantity:");
+                int quantity = input.nextInt();
+                out.writeObject(new WorkerFunctions("MODIFY_STOCK",store, product, quantity));
+                out.flush();
+                response = in.readObject();
+                if(response instanceof Store){
+                    System.out.println("Server response: " + ((Store) response).getStoreName());
                 }
                 out.close();
                 in.close();
@@ -361,6 +287,21 @@ public class Manager{
             }
 
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void avgPrice(){
+        try{
+            List<Store> stores = JsonHandler.readStoresFromJson("store.json");
+            int totalPrice = 0;
+            for(Store s: stores){
+                for(Product p: s.getProducts()){
+                    totalPrice += p.getPrice();
+                }
+            }
+            System.out.println("Average price: " + totalPrice/stores.size());
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

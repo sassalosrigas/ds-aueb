@@ -1,14 +1,13 @@
 package main;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class Worker extends Thread {
     private final int workerId;
-    private List<Store> storeList = new CopyOnWriteArrayList<>();
+    private List<Store> storeList = new ArrayList<>();
     private Runnable task = null;
-    private Map<String, List<PendingPurchase>> pendingPurchases = new ConcurrentHashMap<>();
+    private Map<String, List<PendingPurchase>> pendingPurchases = new HashMap<>();
     private Queue<Runnable> pendingTasks = new LinkedList<>();
     private boolean isAlive = true;
 
@@ -31,6 +30,7 @@ public class Worker extends Thread {
         }
 
     }
+
     @Override
     public void run() {
         while(running) {
@@ -58,7 +58,7 @@ public class Worker extends Thread {
     }
 
     public boolean ping() {
-        return isAlive; // sendds life signal :)
+        return isAlive; // sends life signal :)
     }
 
     public void kill(){ isAlive = false; }
@@ -128,29 +128,6 @@ public class Worker extends Thread {
         return false;
     }
 
-    public boolean buyProduct(Store store, Product product, int quantity) {
-
-        for(Store s: storeList){
-            if(s.getStoreName().equals(store.getStoreName())){
-                synchronized (s) {
-                    for (Product p : s.getProducts()) {
-                        if (p.getProductName().equals(product.getProductName())) {
-                            if (p.getAvailableAmount() >= quantity) {
-                                p.setAvailableAmount(p.getAvailableAmount() - quantity);
-                                p.addSales(quantity);
-                                if (p.getAvailableAmount() == 0) {
-                                    p.setOnline(false);
-                                }
-                                return true;
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
 
     public synchronized boolean reserveProduct(Store store, Product product,Customer customer, int quantity) {
         /*
@@ -201,6 +178,31 @@ public class Worker extends Thread {
         }
     }
 
+    public synchronized void syncPurchase(Store primaryStore) {
+        // Find the corresponding store in this worker
+        Store replicaStore = getStore(primaryStore.getStoreName());
+        if (replicaStore == null) return;
+
+        synchronized (replicaStore) {
+            // Sync products
+            for (Product primaryProduct : primaryStore.getProducts()) {
+                Product replicaProduct = replicaStore.getProduct(primaryProduct.getProductName());
+                if (replicaProduct != null) {
+                    // Update all relevant fields
+                    replicaProduct.setAvailableAmount(primaryProduct.getAvailableAmount());
+                    replicaProduct.setTotalSales(primaryProduct.getTotalSales());
+                    replicaProduct.setOnline(primaryProduct.isOnline());
+                    // Add other fields that need synchronization
+                }
+            }
+
+            // Sync store-level data
+            replicaStore.setStars(primaryStore.getStars());
+            replicaStore.calculatePriceCategory();
+            // Add other store fields that need synchronization
+        }
+    }
+
     public synchronized boolean completePurchase(String storeName, String username) {
         Store store = getStore(storeName);
         if(store == null || !pendingPurchases.containsKey(storeName+username)) {
@@ -226,19 +228,16 @@ public class Worker extends Thread {
     }
 
 
-    public synchronized void modifyStock(String storeName, String productName, int quantity) {
-        if(hasStore(storeName) && hasProduct(storeName, productName)){
-            Store store = getStore(storeName);
-            synchronized (store) {
-                for(Product product : store.getProducts()){
-                    if(product.getProductName().equals(productName)){
-                        product.setAvailableAmount(quantity);
+    public synchronized void modifyStock(Store store, Product product, int quantity) {
+        for(Store s: storeList){
+            if(s.equals(store)){
+                for(Product p : s.getProducts()){
+                    if(p.equals(product)){
+                        p.setAvailableAmount(quantity);
+                        System.out.println("Modified stock: " + p.getProductName() + " " + p.getAvailableAmount());
                     }
                 }
-                System.out.println("Changed product " + productName + " from store " + store.getStoreName());
             }
-        }else{
-            System.out.println("Product does not exist");
         }
     }
 
@@ -367,45 +366,45 @@ public class Worker extends Thread {
         return distance <= 5.0;
     }
 
-
-    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductSales(String storeName) {
-        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
-        Store store = getStore(storeName);
-        if (store != null) {
-            for (Product product : store.getProducts()) {
-                results.add(new AbstractMap.SimpleEntry<>(
-                product.getProductName(),
-                product.getTotalSales()
-                ));
-            }
-        }
-        return results;
+    public List<AbstractMap.SimpleEntry<String,Integer>> mapProductSales(String storeName){
+        return storeList.stream()
+                .filter(store -> store.getStoreName().equals(storeName))
+                .filter(store -> isPrimaryStore(store.getStoreName()))  // Only keep matching store
+                .flatMap(store -> store.getProducts().stream()
+                        .map(p -> new AbstractMap.SimpleEntry<>(
+                                p.getProductName(),
+                                p.getTotalSales()  // Emit actual sales numbers
+                        ))
+                )
+                .collect(Collectors.toList());
     }
+
+
 
     public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales() {
-        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
-        for (Store store : storeList) {
-            for (Product product : store.getProducts()) {
-                results.add(new AbstractMap.SimpleEntry<>(
-                        product.getProductType(),
-                        product.getTotalSales()
-                ));
-            }
-        }
-        return results;
+        return storeList.stream().
+                filter(store -> isPrimaryStore(store.getStoreName())).
+                flatMap(store -> store.getProducts().stream()
+                .map(p -> new AbstractMap.SimpleEntry<>(
+                        p.getProductType(),p.getTotalSales()
+                )))
+                .collect(Collectors.toList());
     }
 
-    public List<AbstractMap.SimpleEntry<String, Integer>> mapShopCategorySales() {
-        List<AbstractMap.SimpleEntry<String, Integer>> results = new ArrayList<>();
-        for (Store store : storeList) {
-            for (Product product : store.getProducts()) {
-                results.add(new AbstractMap.SimpleEntry<>(
+    public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(){
+        return storeList.stream().
+                filter(store -> isPrimaryStore(store.getStoreName()))
+                .flatMap(store->store.getProducts().stream().
+                map(p -> new AbstractMap.SimpleEntry<>(
                         store.getFoodCategory(),
-                        product.getTotalSales()
-                ));
-            }
-        }
-        return results;
+                        p.getTotalSales()
+                ))).collect(Collectors.toList());
+    }
+
+    public boolean isPrimaryStore(String storeName) {
+        int numWorkers  = Master.getWorkerNum();
+        List<Integer> assign = Master.getWorkerIndicesForStore(storeName, numWorkers);
+        return assign.get(0) == this.workerId;
     }
 }
 
