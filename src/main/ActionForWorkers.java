@@ -3,6 +3,7 @@ package main;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ActionForWorkers extends Thread{
     ObjectInputStream in;
@@ -116,11 +117,11 @@ public class ActionForWorkers extends Thread{
         try{
             String operation = request.getOperation();
             if(operation.equals("ADD_STORE")) {
-                Store store = (Store)request.getObject();
+                Store store = (Store) request.getObject();
                 List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
                 Worker primary = workers.get(assign.get(0));
                 Worker replica = workers.get(assign.get(1));
-                if(master.isAlive(primary)){
+                if (master.isAlive(primary)) {
                     primary.receiveTask(() -> {
                         boolean added = primary.addStore(store);
                         try {
@@ -137,7 +138,7 @@ public class ActionForWorkers extends Thread{
                             e.printStackTrace();
                         }
                     });
-                }else{
+                } else {
                     replica.receiveTask(() -> {
                         boolean added = replica.addStore(store);
                         try {
@@ -146,6 +147,43 @@ public class ActionForWorkers extends Thread{
                             } else {
                                 out.writeObject("Store is already registered");
                             }
+                            out.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+            }else if (operation.equals("GET_OFFLINE_PRODUCTS")) {
+                Store store = (Store) request.getObject();
+                Worker primary = workers.get(Master.getWorkerIndicesForStore(store.getStoreName(), workers.size()).get(0));
+                List<Product> offlineProducts = primary.getOfflineProducts(store);
+                out.writeObject(offlineProducts);
+            }else if (operation.equals("REACTIVATE_PRODUCT")) {
+                Store store = (Store) request.getObject();
+                Product product = (Product) request.getObject2();
+                List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
+
+                Worker primary = workers.get(assign.get(0));
+                Worker replica = workers.get(assign.get(1));
+
+                if (master.isAlive(primary)) {
+                    primary.receiveTask(() -> {
+                        String result = primary.reactivateProduct(store, product);
+                        try {
+                            out.writeObject(result);
+                            replica.receiveTask(() -> {
+                                replica.syncStore(primary.getStore(store.getStoreName()));
+                            });
+                            out.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                } else {
+                    replica.receiveTask(() -> {
+                        String result = replica.reactivateProduct(store, product);
+                        try {
+                            out.writeObject(result);
                             out.flush();
                         } catch (IOException e) {
                             e.printStackTrace();
