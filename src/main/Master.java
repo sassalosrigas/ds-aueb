@@ -158,7 +158,7 @@ public class Master{
 
     public Map<String,Integer> reduceProductSales(String storeName) {
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = workers.parallelStream()
-                .flatMap(worker -> worker.mapProductSales(storeName).stream())
+                .flatMap(worker -> worker.mapProductSales(storeName, workers).stream())
                 .collect(Collectors.toList());
 
         return mappedResults.stream().collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
@@ -166,7 +166,7 @@ public class Master{
 
     public Map<String, Integer> reduceProductCategorySales() {
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = workers.parallelStream()
-                .flatMap(worker -> worker.mapProductCategorySales().stream())
+                .flatMap(worker -> worker.mapProductCategorySales(workers).stream())
                 .collect(Collectors.toList());
 
         return mappedResults.stream()
@@ -179,7 +179,7 @@ public class Master{
 
     public Map<String,Integer> reduceShopCategorySales() {
         List<AbstractMap.SimpleEntry<String,Integer>> mappedResults = workers.parallelStream().
-                flatMap(worker -> worker.mapShopCategorySales().stream()).collect(Collectors.toList());
+                flatMap(worker -> worker.mapShopCategorySales(workers).stream()).collect(Collectors.toList());
 
         return mappedResults.stream().collect(Collectors.toMap(
                 AbstractMap.SimpleEntry::getKey,
@@ -188,9 +188,10 @@ public class Master{
         ));
     }
 
+
     public List<Store> filterStores(String category, double minRate, double maxRate, String priceCat) {
         List<Store> mappedResults = workers.parallelStream().flatMap(worker -> worker.mapFilterStores(
-                category, minRate, maxRate, priceCat
+                category, minRate, maxRate, priceCat,workers
         ).stream()).collect(Collectors.toList());
         return mappedResults.stream().distinct().collect(Collectors.toList());
     }

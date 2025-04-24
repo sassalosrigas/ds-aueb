@@ -374,6 +374,10 @@ public class ActionForWorkers extends Thread{
                         try {
                             if (reserved) {
                                 out.writeObject(new Customer.ProductOrder(product.getProductName(), quantity));
+                                Store updatedStore = primary.getStore(store.getStoreName());
+                                replica.receiveTask(() -> {
+                                    replica.syncPurchase(updatedStore);
+                                });
                             } else {
                                 out.writeObject("Reservation failed");
                             }
@@ -382,12 +386,6 @@ public class ActionForWorkers extends Thread{
                             throw new RuntimeException(e);
                         }
                     });
-                    /*
-                    replica.receiveTask(() -> {
-                        //replica.reserveProduct(store, product,customer, quantity);
-                    });
-
-                     */
                 }else {
                     replica.receiveTask(() -> {
                         boolean reserved = replica.reserveProduct(store, product, customer,quantity);
@@ -427,11 +425,6 @@ public class ActionForWorkers extends Thread{
                             throw new RuntimeException(e);
                         }
                     });
-                    /*
-                    replica.receiveTask(() -> {
-                        replica.completePurchase(store.getStoreName(), customer.getUsername());
-                    });
-                     */
                 }else {
                     replica.receiveTask(() -> {
                         boolean completed = replica.completePurchase(store.getStoreName(), customer.getUsername());
@@ -460,6 +453,10 @@ public class ActionForWorkers extends Thread{
                         try {
                             if (reverted) {
                                 out.writeObject("Revert successful");
+                                Store updatedStore = primary.getStore(store.getStoreName());
+                                replica.receiveTask(() -> {
+                                    replica.syncPurchase(updatedStore);
+                                });
                             } else {
                                 out.writeObject("Revert unsuccessful");
                             }
@@ -468,12 +465,6 @@ public class ActionForWorkers extends Thread{
                             throw new RuntimeException(e);
                         }
                     });
-                    /*
-                    replica.receiveTask(() -> {
-                        replica.rollbackPurchase(store.getStoreName(), customer.getUsername());
-                    });
-
-                     */
                 }else {
                     replica.receiveTask(() -> {
                         boolean reverted = replica.rollbackPurchase(store.getStoreName(), customer.getUsername());
