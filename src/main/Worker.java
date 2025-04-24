@@ -105,33 +105,6 @@ public class Worker extends Thread {
         return false;
     }
 
-    public boolean hasStore(String storeName) {
-        /*
-            Elegxos uparkshs katasthmatos sthn lista
-         */
-        for(Store store : storeList){
-            if(store.getStoreName().equals(storeName)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean hasProduct(String storeName, String productName) {
-        /*
-            Elegxos uparkshs proiontos sthn lista
-         */
-        Store store = getStore(storeName);
-        if(store!=null){
-            for(Product product : store.getProducts()){
-                if(product.getProductName().equals(productName)){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 
     public synchronized boolean reserveProduct(Store store, Product product,Customer customer, int quantity) {
         /*
