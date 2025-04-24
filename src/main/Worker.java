@@ -3,6 +3,8 @@ package main;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static main.Master.getWorkerIndicesForStore;
+
 public class Worker extends Thread {
     private final int workerId;
     private List<Store> storeList = new ArrayList<>();
@@ -64,7 +66,9 @@ public class Worker extends Thread {
     public void kill(){ isAlive = false; }
 
 
-
+    public int getWorkerId() {
+        return workerId;
+    }
 
     public synchronized void receiveTask(Runnable task) {
         pendingTasks.add(task);
@@ -281,15 +285,13 @@ public class Worker extends Thread {
         return null;
     }
 
-    public List<Store> mapFilterStores(String category, double minRate, double maxRate, String priceCat) {
-            List<Store> results = new ArrayList<>();
-            for(Store store : storeList){
-                if(matchesFilter(store, category, minRate, maxRate, priceCat)) {
-                    results.add(store);
-                }
-            }
-            return results;
+    public List<Store> mapFilterStores(String category, double minRate, double maxRate, String priceCat, List<Worker> workers) {
+        return storeList.stream()
+                .filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
+                .filter(store -> matchesFilter(store, category, minRate, maxRate, priceCat))
+                .collect(Collectors.toList());
     }
+
 
     public boolean matchesFilter(Store store, String category, double minRate, double maxRate, String priceCat) {
         boolean result = true;
@@ -360,10 +362,18 @@ public class Worker extends Thread {
         return distance <= 5.0;
     }
 
-    public List<AbstractMap.SimpleEntry<String,Integer>> mapProductSales(String storeName){
+    public boolean shouldIncludeStore(Worker worker,List<Worker> workers, String storeName) {
+        List<Integer> indices = getWorkerIndicesForStore(storeName, workers.size());
+        Worker primary = workers.get(indices.get(0));
+
+        return worker.getWorkerId() == primary.getWorkerId() ||
+                (!primary.isAlive() && worker.getWorkerId() == indices.get(1));
+    }
+
+    public List<AbstractMap.SimpleEntry<String,Integer>> mapProductSales(String storeName, List<Worker> workers){
         return storeList.stream()
                 .filter(store -> store.getStoreName().equals(storeName))
-                .filter(store -> isPrimaryStore(store.getStoreName()))  // Only keep matching store
+                .filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))  // Only keep matching store
                 .flatMap(store -> store.getProducts().stream()
                         .map(p -> new AbstractMap.SimpleEntry<>(
                                 p.getProductName(),
@@ -375,9 +385,9 @@ public class Worker extends Thread {
 
 
 
-    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales() {
+    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales(List<Worker> workers) {
         return storeList.stream().
-                filter(store -> isPrimaryStore(store.getStoreName())).
+                filter(store -> shouldIncludeStore(this, workers,store.getStoreName())).
                 flatMap(store -> store.getProducts().stream()
                 .map(p -> new AbstractMap.SimpleEntry<>(
                         p.getProductType(),p.getTotalSales()
@@ -385,9 +395,9 @@ public class Worker extends Thread {
                 .collect(Collectors.toList());
     }
 
-    public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(){
+    public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(List<Worker> workers){
         return storeList.stream().
-                filter(store -> isPrimaryStore(store.getStoreName()))
+                filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
                 .flatMap(store->store.getProducts().stream().
                 map(p -> new AbstractMap.SimpleEntry<>(
                         store.getFoodCategory(),
@@ -395,10 +405,5 @@ public class Worker extends Thread {
                 ))).collect(Collectors.toList());
     }
 
-    public boolean isPrimaryStore(String storeName) {
-        int numWorkers  = Master.getWorkerNum();
-        List<Integer> assign = Master.getWorkerIndicesForStore(storeName, numWorkers);
-        return assign.get(0) == this.workerId;
-    }
 }
 
