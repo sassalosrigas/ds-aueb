@@ -54,13 +54,6 @@ public class WorkerFunctions implements Serializable {
         this.name = name;
     }
 
-    public WorkerFunctions(String operation,String name, String name2, int num) {
-        this.operation = operation;
-        this.name2 = name2;
-        this.name = name;
-        this.num = num;
-    }
-
     public WorkerFunctions(String operation, Object object, int num){
         this.operation = operation;
         this.object = object;

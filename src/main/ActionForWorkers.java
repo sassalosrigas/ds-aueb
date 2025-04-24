@@ -66,49 +66,6 @@ public class ActionForWorkers extends Thread{
         System.out.println("Stores rebalanced across " + numWorkers + " workers");
     }
 
-    public void handleWorkerScaleRequest(int newWorkerCount) {
-        if (newWorkerCount <= 0) {
-            System.out.println("Error: Need at least 1 worker");
-            return;
-        }
-
-        synchronized (workers) {
-            int currentCount = workers.size();
-
-            if (newWorkerCount == currentCount) {
-                System.out.println("Worker count unchanged");
-                return;
-            }
-
-            System.out.println("Scaling from " + currentCount + " to " + newWorkerCount + " workers");
-
-            if (newWorkerCount > currentCount) {
-                for (int i = currentCount; i < newWorkerCount; i++) {
-                    Worker worker = new Worker(i);
-                    worker.start();
-                    workers.add(worker);
-                    System.out.println("Added worker " + i);
-                }
-            }
-            else {
-                List<Store> storesToReassign = new ArrayList<>();
-                for (int i = newWorkerCount; i < currentCount; i++) {
-                    Worker worker = workers.get(i);
-                    storesToReassign.addAll(worker.getAllStores());
-                    worker.shutdown();
-                }
-                workers = workers.subList(0, newWorkerCount);
-                if (!storesToReassign.isEmpty()) {
-                    workers.get(0).addStores(storesToReassign);
-                }
-            }
-
-            rebalanceStores();
-
-            System.out.println("Scaling completed. Current workers: " + workers.size());
-        }
-    }
-
     public void processRequest(WorkerFunctions request) {
         /*
             Dexetai ena WorkerFunctions antikeimeno kai afou diabazei to operation kanei tis

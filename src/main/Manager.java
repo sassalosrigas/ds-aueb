@@ -222,8 +222,6 @@ public class Manager{
 
             switch (choice) {
                 case 1:
-                    //System.out.println("Enter store name:");
-                    //String storeName = input.nextLine();
                     out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
                     out.flush();
                     Object response = in.readObject();
@@ -325,21 +323,6 @@ public class Manager{
             }
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void avgPrice(){
-        try{
-            List<Store> stores = JsonHandler.readStoresFromJson("store.json");
-            int totalPrice = 0;
-            for(Store s: stores){
-                for(Product p: s.getProducts()){
-                    totalPrice += p.getPrice();
-                }
-            }
-            System.out.println("Average price: " + totalPrice/stores.size());
-        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
