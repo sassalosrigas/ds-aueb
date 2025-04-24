@@ -1,0 +1,45 @@
+{
+  "storeName" : "Serial Grillers",
+  "foodCategory" : "Burger",
+  "storeLogo" : "src/logos/serialgrillers.png",
+  "latitude" : 37.983344,
+  "longitude" : 23.735589,
+  "noOfVotes" : 20,
+  "stars" : 4,
+  "products" : [ {
+    "productName" : "Hangover Burger",
+    "productType" : "Burger",
+    "availableAmount" : 2000,
+    "price" : 9.7
+  }, {
+    "productName" : "Fries tomato-feta",
+    "productType" : "Appetizer",
+    "availableAmount" : 1000,
+    "price" : 6
+  }, {
+    "productName" : "Truffle Fries",
+    "productType" : "Appetizer",
+    "availableAmount" : 1000,
+    "price" : 5.8
+  }, {
+    "productName" : "Nugget Burger",
+    "productType" : "Burger",
+    "availableAmount" : 900,
+    "price" : 7.5
+  }, {
+    "productName" : "Coca-Cola Zero",
+    "productType" : "Drink",
+    "availableAmount" : 1000,
+    "price" : 1.7
+  }, {
+    "productName" : "Coca-Cola Zero",
+    "productType" : "Drink",
+    "availableAmount" : 1500,
+    "price" : 1.7
+  }, {
+    "productName" : "Veggie Burger",
+    "productType" : "Burger",
+    "availableAmount" : 900,
+    "price" : 8.3
+  }]
+}
