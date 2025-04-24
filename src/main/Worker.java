@@ -182,7 +182,7 @@ public class Worker extends Thread {
         }
     }
 
-    public synchronized void syncPurchase(Store primaryStore) {
+    public synchronized void syncStore(Store primaryStore) {
         Store replicaStore = getStore(primaryStore.getStoreName());
         if (replicaStore == null) return;
 
