@@ -126,6 +126,9 @@ public class ActionForWorkers extends Thread{
                         try {
                             if (added) {
                                 out.writeObject(store);
+                                replica.receiveTask(() -> {
+                                    replica.syncStore(primary.getStore(store.getStoreName()));
+                                });
                             } else {
                                 out.writeObject("Store is already registered");
                             }
@@ -133,12 +136,6 @@ public class ActionForWorkers extends Thread{
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    });
-
-                    // update replica
-
-                    replica.receiveTask(() -> {
-                        replica.addStore(store);
                     });
                 }else{
                     replica.receiveTask(() -> {
@@ -169,6 +166,9 @@ public class ActionForWorkers extends Thread{
                         try {
                             if(existed){
                                 out.writeObject("Product " + product.getProductName() + " was set online");
+                                replica.receiveTask(() -> {
+                                    replica.syncStore(primary.getStore(store.getStoreName()));
+                                });
                             }else{
                                 out.writeObject("Product " + product.getProductName() + " was registered successfully");
                             }
@@ -176,11 +176,6 @@ public class ActionForWorkers extends Thread{
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    });
-                    //update replica
-
-                    replica.receiveTask(() -> {
-                        replica.addProduct(store, product);
                     });
                 }else {
                     replica.receiveTask(() -> {
@@ -209,6 +204,9 @@ public class ActionForWorkers extends Thread{
                         try {
                             if(removed){
                                 out.writeObject("Removed product " + product.getProductName() +  " from " + store.getStoreName());
+                                replica.receiveTask(() -> {
+                                    replica.syncStore(primary.getStore(store.getStoreName()));
+                                });
                             }else{
                                 out.writeObject("Product is already offline");
                             }
@@ -216,9 +214,6 @@ public class ActionForWorkers extends Thread{
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    });
-                    replica.receiveTask(() -> {
-                        replica.removeProduct(store, product);
                     });
                 }else {
                     replica.receiveTask(() -> {
@@ -245,15 +240,15 @@ public class ActionForWorkers extends Thread{
                 if(master.isAlive(primary)) {
                     primary.receiveTask(() -> {
                     primary.modifyStock(store, product, quantity);
+                        replica.receiveTask(() -> {
+                            replica.syncStore(primary.getStore(store.getStoreName()));
+                        });
                     try {
                         out.writeObject(store.getStoreName());
                         out.flush();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    });
-                    replica.receiveTask(() -> {
-                        replica.modifyStock(store, product, quantity);
                     });
                 }else{
                     replica.receiveTask(() -> {
@@ -271,18 +266,6 @@ public class ActionForWorkers extends Thread{
                 Customer customer = (Customer)request.getObject();
                 List<Store> stores = new ArrayList<Store>();
                 List<Thread> workerThreads = getThreads(stores,customer);
-                /*
-                for(Worker worker: workers) {
-                    Thread t = new Thread(() -> {
-                        List<Store> workerStores = worker.showStores(customer);
-                        synchronized(stores) {
-                            stores.addAll(workerStores);
-                        }
-                    });
-                    workerThreads.add(t);
-                    t.start();
-                }
-                */
                 for(Thread t : workerThreads) {
                     try {
                         t.join();
@@ -329,15 +312,15 @@ public class ActionForWorkers extends Thread{
                 if (master.isAlive(primary)) {
                     primary.receiveTask(() -> {
                         primary.rateStore(store, rating);
+                        replica.receiveTask(() -> {
+                            replica.syncStore(primary.getStore(store.getStoreName()));
+                        });
                         try {
                             out.writeObject("Successful");
                             out.flush();
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                    });
-                    replica.receiveTask(() -> {
-                        replica.rateStore(store, rating);
                     });
                 }else {
                     replica.receiveTask(() -> {
@@ -374,9 +357,8 @@ public class ActionForWorkers extends Thread{
                         try {
                             if (reserved) {
                                 out.writeObject(new Customer.ProductOrder(product.getProductName(), quantity));
-                                Store updatedStore = primary.getStore(store.getStoreName());
                                 replica.receiveTask(() -> {
-                                    replica.syncPurchase(updatedStore);
+                                    replica.syncStore(primary.getStore(store.getStoreName()));
                                 });
                             } else {
                                 out.writeObject("Reservation failed");
@@ -413,9 +395,8 @@ public class ActionForWorkers extends Thread{
                         try {
                             if (completed) {
                                 out.writeObject("Purchase successful");
-                                Store updatedStore = primary.getStore(store.getStoreName());
                                 replica.receiveTask(() -> {
-                                    replica.syncPurchase(updatedStore);
+                                    replica.syncStore(primary.getStore(store.getStoreName()));
                                 });
                             } else {
                                 out.writeObject("Purchase failed");
@@ -453,9 +434,8 @@ public class ActionForWorkers extends Thread{
                         try {
                             if (reverted) {
                                 out.writeObject("Revert successful");
-                                Store updatedStore = primary.getStore(store.getStoreName());
                                 replica.receiveTask(() -> {
-                                    replica.syncPurchase(updatedStore);
+                                    replica.syncStore(primary.getStore(store.getStoreName()));
                                 });
                             } else {
                                 out.writeObject("Revert unsuccessful");
