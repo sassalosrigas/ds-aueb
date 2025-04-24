@@ -1,0 +1,40 @@
+{
+  "storeName" : "McDonald's",
+  "foodCategory" : "Burger",
+  "storeLogo" : "src/logos/mcdonalds.png",
+  "latitude" : 37.979691,
+  "longitude" : 23.731747,
+  "noOfVotes" : 45,
+  "stars" : 5,
+  "products" : [ {
+    "productName" : "Chicken Burger",
+    "productType" : "Burger",
+    "availableAmount" : 3000,
+    "price" : 3.50
+  }, {
+    "productName" : "Cheeseburger",
+    "productType" : "Burger",
+    "availableAmount" : 3500,
+    "price" : 2.5
+  }, {
+    "productName" : "Big Fries",
+    "productType" : "Appetizer",
+    "availableAmount" : 5000,
+    "price" : 4
+  }, {
+    "productName" : "Filet-o-Fish",
+    "productType" : "Burger",
+    "availableAmount" : 900,
+    "price" : 4.5
+  }, {
+    "productName" : "Sour Cream",
+    "productType" : "Sauce",
+    "availableAmount" : 6000,
+    "price" : 0.7
+  }, {
+    "productName" : "Sprite Zero",
+    "productType" : "Drink",
+    "availableAmount" : 1000,
+    "price" : 3.5
+  }]
+}
