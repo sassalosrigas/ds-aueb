@@ -180,15 +180,31 @@ public class Manager{
 
             switch (choice) {
                 case 1:
-                    System.out.println("Enter store name:");
-                    String storeName = input.nextLine();
-                    out.writeObject(new WorkerFunctions("PRODUCT_SALES", storeName));
+                    //System.out.println("Enter store name:");
+                    //String storeName = input.nextLine();
+                    out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
                     out.flush();
-                    Map<String, Integer> results = (Map<String, Integer>) in.readObject();
-                    System.out.println("Sales for " +storeName+": ");
-                    results.forEach((product,sales)->
-                            System.out.printf("%-20s: %d%n", product, sales));
-                    break;
+                    Object response = in.readObject();
+                    if(response instanceof ArrayList){
+                        ArrayList<Store> stores = (ArrayList<Store>) response;
+                        System.out.println("Choose store to see sales from: ");
+                        int counter = 0;
+                        for(Store store : stores){
+                            System.out.println(++counter + ". " + store.getStoreName());
+                        }
+                        choice = input.nextInt();
+                        if(choice >= 1 && choice <= stores.size()){
+                            Store store = stores.get(choice-1);
+                            out.writeObject(new WorkerFunctions("PRODUCT_SALES", store.getStoreName()));
+                            out.flush();
+                            Map<String, Integer> results = (Map<String, Integer>) in.readObject();
+                            System.out.println("Sales for " +store.getStoreName()+": ");
+                            results.forEach((product,sales)->
+                                    System.out.printf("%-20s: %d%n", product, sales));
+                            break;
+
+                        }
+                    }
                 case 2:
                     out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES"));
                     out.flush();
@@ -235,28 +251,41 @@ public class Manager{
             Allagh tou diathesimou stock enos proiontos
          */
         try{
-            System.out.println("Give the store's name:");
-            String storeName = input.nextLine();
-            System.out.println("Give the product's name:");
-            String productName = input.nextLine();
-            System.out.println("Give new quantity:");
-            int quantity = input.nextInt();
-            try{
-                Socket socket = new Socket("localhost", 8080);
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                out.writeObject(new WorkerFunctions("MODIFY_STOCK",storeName, productName, quantity));
+            Socket socket = new Socket("localhost", 8080);
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
+            out.flush();
+            Object response = in.readObject();
+            if(response instanceof ArrayList){
+                ArrayList<Store> stores = (ArrayList<Store>) response;
+                System.out.println("Choose store: ");
+                for(int i = 0;i<stores.size();i++){
+                    System.out.println(i+1+ ". " + stores.get(i).getStoreName());
+                }
+                int choice = input.nextInt();
+                Store store = stores.get(choice-1);
+                System.out.println("Choose product to modify quantity: ");
+                int counter = 0;
+                for(Product p: store.getProducts()){
+                    System.out.println(++counter + ": " + p.getProductName() + " Current quantity: " + p.getAvailableAmount());
+                }
+                choice = input.nextInt();
+                Product product = store.getProducts().get(choice-1);
+                System.out.println("Give new quantity:");
+                int quantity = input.nextInt();
+                out.writeObject(new WorkerFunctions("MODIFY_STOCK",store, product, quantity));
                 out.flush();
-                Object response = in.readObject();
+                response = in.readObject();
                 if(response instanceof Store){
                     System.out.println("Server response: " + ((Store) response).getStoreName());
                 }
                 out.close();
                 in.close();
                 socket.close();
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
+
             }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

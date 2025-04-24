@@ -19,7 +19,6 @@ public class Main {
             System.out.println("Choose mode: (1) manager, (2) client, (3) Exit");
             mode = in.nextInt();
             if(mode == 3){
-                System.out.println("ei");
                 break;
             }
             if (mode == 1) {
@@ -101,6 +100,5 @@ public class Main {
             }
         }while(true);
         in.close();
-
     }
 }

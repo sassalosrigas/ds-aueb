@@ -224,14 +224,15 @@ public class Customer implements Serializable {
             if(response instanceof ArrayList){
                 System.out.println("Server response: ");
                 System.out.println("Choose store to rate");
+                int counter = 0;
                 for(Store store : (ArrayList<Store>)response){
-                    System.out.println(store.getStoreName());
+                    System.out.println(++counter + " " + store.getStoreName());
                 }
                 int choice = in.nextInt();
                 if(choice >= 1 && choice <= ((ArrayList<?>) response).size()){
                     Store store = ((ArrayList<Store>) response).get(choice-1);
                     System.out.println("Original rating: " + store.getStars());
-                    System.out.println("Give rating");
+                    System.out.println("Give rating: ");
                     int rating = in.nextInt();
                     out.writeObject(new WorkerFunctions("APPLY_RATING",store, rating));
                     out.flush();
