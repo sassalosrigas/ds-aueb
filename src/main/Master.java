@@ -100,61 +100,11 @@ public class Master{
         return Math.abs(storeName.hashCode()) % numOfWorkers;
     }
 
-
-    public static int getWorkerNum(){
-        return workersSize;
-    }
-
     public static List<Integer> getWorkerIndicesForStore(String storeName, int numOfWorkers) {
         int mainIndex = Math.abs(storeName.hashCode()) % numOfWorkers;
         int replicaIndex = (mainIndex + 1) % numOfWorkers;
         return Arrays.asList(mainIndex, replicaIndex);
     }
-
-
-    /*
-    public Map<String, Integer> aggregateProductSales(String storeName) {
-        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
-        for (Worker worker : workers) {
-            mappedResults.addAll(worker.mapProductSales(storeName));
-        }
-        Map<String, Integer> results = new HashMap<>();
-        for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
-            results.put(entry.getKey(), entry.getValue());
-        }
-        return results;
-    }
-
-
-    public Map<String, Integer> reduceProductSales(String storeName) {
-        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
-        List<Thread> workerThreads = new ArrayList<>();
-        for (Worker worker : workers) {
-            Thread t = new Thread(()-> {
-                synchronized (mappedResults) {
-                    mappedResults.addAll(worker.mapProductSales(storeName));
-                }
-            });
-            workerThreads.add(t);
-            t.start();
-        }
-        for (Thread t : workerThreads) {
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        Map<String, Integer> results = new HashMap<>();
-        synchronized (mappedResults){
-            for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
-                results.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return results;
-    }
-
-     */
 
     public Map<String,Integer> reduceProductSales(String storeName) {
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = workers.parallelStream()
