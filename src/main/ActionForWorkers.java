@@ -3,7 +3,7 @@ package main;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 public class ActionForWorkers extends Thread{
     ObjectInputStream in;
@@ -26,9 +26,9 @@ public class ActionForWorkers extends Thread{
     public void run() {
         try{
             try {
-                while (true) {
-                    WorkerFunctions request = (WorkerFunctions) in.readObject();
-                    processRequest(request);
+                while (true) { //trexe sinexeia wspou na labeis request
+                    WorkerFunctions request = (WorkerFunctions) in.readObject(); //lhpsh request
+                    processRequest(request);  //epeksergasia request
                 }
             } catch (EOFException e) {
                 System.out.println("Client disconnected.");
@@ -73,19 +73,19 @@ public class ActionForWorkers extends Thread{
          */
         try{
             String operation = request.getOperation();
-            if(operation.equals("ADD_STORE")) {
+            if(operation.equals("ADD_STORE")) {    //Gia methodo addStore tou manager
                 Store store = (Store) request.getObject();
                 List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
                 Worker primary = workers.get(assign.get(0));
                 Worker replica = workers.get(assign.get(1));
-                if (master.isAlive(primary)) {
+                if (master.isAlive(primary)) {   //An einai zontanos o primary
                     primary.receiveTask(() -> {
                         boolean added = primary.addStore(store);
                         try {
                             if (added) {
                                 out.writeObject(store);
-                                replica.receiveTask(() -> {
-                                    replica.syncStore(primary.getStore(store.getStoreName()));
+                                replica.receiveTask(() -> {     //Oti allagh se store tou primary worker ginetai sync me auto tou replica
+                                    replica.syncStore(primary.getStore(store.getStoreName()));   //gia na exoun idia dedomena
                                 });
                             } else {
                                 out.writeObject("Store is already registered");
@@ -95,7 +95,7 @@ public class ActionForWorkers extends Thread{
                             e.printStackTrace();
                         }
                     });
-                } else {
+                } else {    //An den einai zontanos o primary anti gia sync apo primary o replica lambanei kateutheian to task
                     replica.receiveTask(() -> {
                         boolean added = replica.addStore(store);
                         try {
@@ -147,7 +147,7 @@ public class ActionForWorkers extends Thread{
                         }
                     });
                 }
-            }else if(operation.equals("ADD_PRODUCT")) {
+            }else if(operation.equals("ADD_PRODUCT")) {  //gia methodo addProductToStore tou manager
                 System.out.println("product");
                 Store store = (Store) request.getObject();
                 Product product = (Product)request.getObject2();
@@ -187,7 +187,7 @@ public class ActionForWorkers extends Thread{
                         }
                     });
                 }
-            } else if(operation.equals("REMOVE_PRODUCT")) {
+            } else if(operation.equals("REMOVE_PRODUCT")) {  //gia methodo removeProductFromStore tou manager
                 Store store = (Store) request.getObject();
                 Product product = (Product) request.getObject2();
                 List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
@@ -225,7 +225,7 @@ public class ActionForWorkers extends Thread{
 
                     });
                 }
-            }else if(operation.equals("MODIFY_STOCK")) {
+            }else if(operation.equals("MODIFY_STOCK")) {  //gia mrethodo modifyAvailability tou manager
                 Store store = (Store) request.getObject();
                 Product product = (Product) request.getObject2();
                 int quantity = request.getNum();
@@ -257,7 +257,7 @@ public class ActionForWorkers extends Thread{
                     });
 
                 };
-            }else if(operation.equals("SHOW_STORES")) {
+            }else if(operation.equals("SHOW_STORES")) {  //gia methodo showNearbyStores tou customer
                 Customer customer = (Customer)request.getObject();
                 List<Store> stores = new ArrayList<Store>();
                 List<Thread> workerThreads = getThreads(stores,customer);
@@ -274,7 +274,7 @@ public class ActionForWorkers extends Thread{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }else if(operation.equals("SHOW_ALL_STORES")) {
+            }else if(operation.equals("SHOW_ALL_STORES")) { //xrhsimopoieitai se polles methodous, deixnei ola ta stores ths efarmoghs
                 List<Store> stores = new ArrayList<Store>();
                 List<Thread> workerThreads = getThreads(stores);
                 for (Thread t : workerThreads) {
@@ -290,7 +290,7 @@ public class ActionForWorkers extends Thread{
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }else if (operation.equals("FILTER_STORES")) {
+            }else if (operation.equals("FILTER_STORES")) {  //gia th methodo filterStores tou customer
                 String foodCategory = request.getName();
                 double lowerStars = request.getDouble1();
                 double upperStars = request.getDouble2();
@@ -298,7 +298,7 @@ public class ActionForWorkers extends Thread{
 
                 List<Store> results = master.filterStores(foodCategory, lowerStars, upperStars, priceCategory);
                 out.writeObject(results);
-            }else if(operation.equals("APPLY_RATING")){
+            }else if(operation.equals("APPLY_RATING")){ //gia th methodo rateStore tou customer
                 Store store = (Store)request.getObject();
                 int rating = request.getNum();
                 List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
@@ -328,19 +328,20 @@ public class ActionForWorkers extends Thread{
                         }
                     });
                 }
-            }else if (operation.equals("PRODUCT_SALES")) {
+                // Oi leitourgies pou xrhsimopoioun map/reduce anatithentai kateutheian ston master
+            }else if (operation.equals("PRODUCT_SALES")) {  // manager/salesPerProduct case 1
                 String storeName = (String) request.getName();
                 Map<String, Integer> results = this.master.reduceProductSales(storeName);
                 out.writeObject(results);
-            }else if (operation.equals("PRODUCT_CATEGORY_SALES")) {
+            }else if (operation.equals("PRODUCT_CATEGORY_SALES")) { //manager/salesPerProduct case 2
                 String productCategory = request.getName();
                 Map<String, Integer> results = this.master.reduceProductCategorySales(productCategory);
                 out.writeObject(results);
-            }else if (operation.equals("SHOP_CATEGORY_SALES")) {
+            }else if (operation.equals("SHOP_CATEGORY_SALES")) { //manager/salesPerProduct case 3
                 String shopCategory = request.getName();
                 Map<String, Integer> results = this.master.reduceShopCategorySales(shopCategory);
                 out.writeObject(results);
-            }else if(operation.equals("RESERVE_PRODUCT")){
+            }else if(operation.equals("RESERVE_PRODUCT")){  //customer/buyProducts krathsh proiontos
                 Store store = (Store)request.getObject2();
                 Product product = (Product) request.getObject();
                 Customer customer = (Customer) request.getObject3();
@@ -380,7 +381,7 @@ public class ActionForWorkers extends Thread{
                         }
                     });
                 }
-            }else if(operation.equals("COMPLETE_PURCHASE")){
+            }else if(operation.equals("COMPLETE_PURCHASE")){ //customer/buyProducts oloklhrwsh paraggelias
                 Store store = (Store)request.getObject();
                 Customer customer = (Customer) request.getObject2();
                 List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
@@ -419,7 +420,7 @@ public class ActionForWorkers extends Thread{
                     });
                 }
 
-            }else if(operation.equals("ROLLBACK_PURCHASE")){
+            }else if(operation.equals("ROLLBACK_PURCHASE")){  //customer/buyProducts roolback paraggelias
                 Store store = (Store)request.getObject();
                 Customer customer = (Customer) request.getObject2();
                 List<Integer> assign = Master.getWorkerIndicesForStore(store.getStoreName(), workers.size());
@@ -465,6 +466,10 @@ public class ActionForWorkers extends Thread{
     }
 
     private List<Thread> getThreads(List<Store> stores) {
+        /*
+            Epistrefei me synchronized tropo ta threads pou periexoun ola ta katasthmata,
+            xrhsimopoieitai gia methodous pou xreiazetai na emfanistoun ola ta katasthmata
+         */
         Set<String> storeNames = Collections.synchronizedSet(new HashSet<>());
         List<Thread> workerThreads = new ArrayList<>();
         for (Worker worker : workers) {
@@ -484,6 +489,10 @@ public class ActionForWorkers extends Thread{
     }
 
     private List<Thread> getThreads(List<Store> stores, Customer customer) {
+        /*
+        Idia methodos me allh upografh apo thn apo allh getThread gia na mporei na epistrefei
+        ta katasthmata se aktina 5km apo ton pelath anti gia ola ta katasthmata ths efarmoghs
+         */
         Set<String> storeNames = Collections.synchronizedSet(new HashSet<>());
         List<Thread> workerThreads = new ArrayList<>();
         for (Worker worker : workers) {

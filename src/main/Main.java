@@ -10,8 +10,7 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         Scanner in = new Scanner(System.in);
         new Master();  //Arxikopoihsh kai run Master server
-        sleep(2500);  //kane sleep gia na exei xrono na anoiksei kai na arxikopoihthei o master allies ta addStore ton vriskoun kleisto kai dinoun error
-        //ama bgalei error kamia fora thelei restart
+        sleep(2000);  //kane sleep gia na exei xrono na anoiksei kai na arxikopoihthei o master allies ta addStore ton vriskoun kleisto kai dinoun error
         Manager.addStore(new Scanner("src/stores/store.json"));  //Arxikopoihsh stores me thn ekkinhsh
         Manager.addStore(new Scanner("src/stores/store2.json"));
         Manager.addStore(new Scanner("src/stores/store3.json"));
