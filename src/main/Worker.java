@@ -38,7 +38,7 @@ public class Worker extends Thread {
         while(running) {
             Runnable task = null;
             synchronized (this) {
-                while(pendingTasks.isEmpty() && running) {
+                while(pendingTasks.isEmpty() && running) { //oso eisai energos kai den exeis tasks perimene
                     try {
                         wait();
                     } catch (InterruptedException e) {
@@ -47,9 +47,9 @@ public class Worker extends Thread {
                     }
                 }
                 if (!running) break;
-                task = pendingTasks.poll();
+                task = pendingTasks.poll(); //bgale to prwto task apo th lista
                 try {
-                    task.run();
+                    task.run();  //trekse to trexwn task
                 } catch (Exception e) {
                     System.err.println("Error running worker " + workerId);
                 } finally {
@@ -60,7 +60,7 @@ public class Worker extends Thread {
     }
 
     public boolean ping() {
-        return isAlive; // sends life signal :)
+        return isAlive;
     }
 
     public void kill(){ isAlive = false; }
@@ -71,6 +71,10 @@ public class Worker extends Thread {
     }
 
     public synchronized void receiveTask(Runnable task) {
+        /*
+        molis erthei neo task balto sto telos ths listas gia na kraththei o proteraiothta
+        kai eidipoihse
+         */
         pendingTasks.add(task);
         notify();
     }
@@ -156,6 +160,10 @@ public class Worker extends Thread {
     }
 
     public synchronized void syncStore(Store primaryStore) {
+        /*
+        Klaeitai apo ta replicas. vriskei to store pou exei idio onoma me tou primary
+        kai antigrafei ola ta stoixeia tou wste na einai updated meta apo kathe tropopoihsh
+         */
         Store replicaStore = getStore(primaryStore.getStoreName());
         if (replicaStore == null) return;
 
@@ -175,6 +183,9 @@ public class Worker extends Thread {
     }
 
     public synchronized boolean completePurchase(String storeName, String username) {
+        /*
+        Katharise thn paraggelia apo tis pending kai oristikopoihse thn paraggelia
+         */
         Store store = getStore(storeName);
         if(store == null || !pendingPurchases.containsKey(storeName+username)) {
             return false;
@@ -200,6 +211,9 @@ public class Worker extends Thread {
 
 
     public synchronized void modifyStock(Store store, Product product, int quantity) {
+        /*
+        allakse thn diathesimh posothta enos proiontos
+         */
         for(Store s: storeList){
             if(s.equals(store)){
                 for(Product p : s.getProducts()){
@@ -213,6 +227,9 @@ public class Worker extends Thread {
     }
 
     public boolean addProduct(Store store, Product product) {
+        /*
+        Vale neo proion sto store h kanto online an ipirxe idi
+         */
         for(Store s : storeList){
             if(s.equals(store)){
                 synchronized (s){
@@ -247,6 +264,9 @@ public class Worker extends Thread {
     }
 
     public boolean removeProduct(Store store, Product product) {
+        /*
+        Kane ena proion offline
+         */
         for(Store s : storeList){
             if(s.equals(store)){
                 synchronized (s){
@@ -264,6 +284,9 @@ public class Worker extends Thread {
     }
 
     public synchronized List<Product> getOfflineProducts(Store store) {
+        /*
+        Vres ta anenerga proionta
+         */
         Store localStore = getStore(store.getStoreName());
         if (localStore == null) return Collections.emptyList();
 
@@ -282,6 +305,9 @@ public class Worker extends Thread {
     }
 
     public List<Store> mapFilterStores(String category, double minRate, double maxRate, String priceCat, List<Worker> workers) {
+        /*
+        Map sinarthsh gia thn epistrofh katasthmatwn vash filtrwn
+         */
         return storeList.stream()
                 .filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
                 .filter(store -> matchesFilter(store, category, minRate, maxRate, priceCat))
@@ -290,6 +316,9 @@ public class Worker extends Thread {
 
 
     public boolean matchesFilter(Store store, String category, double minRate, double maxRate, String priceCat) {
+        /*
+        Elegkse an ena katasthma tairiaze me ta filtra pou dinontai
+         */
         boolean result = true;
         if (category != null && !store.getFoodCategory().equalsIgnoreCase(category)) {
             return false;
@@ -306,6 +335,9 @@ public class Worker extends Thread {
 
 
     public void rateStore(Store store, int rating){
+        /*
+        Vazei vathmologia se ena katasthma
+         */
         for(Store s : storeList){
             if(s.getStoreName().equals(store.getStoreName())){
                 synchronized (s){
@@ -321,6 +353,9 @@ public class Worker extends Thread {
     }
 
     public List<Store> showStores(Customer customer){
+        /*
+        Deikse ta katasthmata se apostash 5km apo enan pelath
+         */
         List<Store> stores = new ArrayList<>();
         for(Store store : storeList){
             if(isWithInRange(store, customer)){
@@ -332,6 +367,10 @@ public class Worker extends Thread {
 
 
     public boolean isWithInRange(Store store, Customer customer) {
+        /*
+        Sinarthsh pou epeksergazetai longitude/lattitude sintetagmenes gia na
+        vrei thn apostash metaksi duo shmeiwn
+         */
         double storeLat = store.getLatitude();
         double storeLong = store.getLongitude();
         double customerLat = customer.getLatitude();
@@ -359,6 +398,11 @@ public class Worker extends Thread {
     }
 
     public boolean shouldIncludeStore(Worker worker,List<Worker> workers, String storeName) {
+        /*
+        Des ena prepei na simperilaveis ena katasthma an:
+        a)Tairiazei to id me tou primary
+        b)O primary exei skotothei kai iparxei replica
+         */
         List<Integer> indices = getWorkerIndicesForStore(storeName, workers.size());
         Worker primary = workers.get(indices.get(0));
 
@@ -367,31 +411,23 @@ public class Worker extends Thread {
     }
 
     public List<AbstractMap.SimpleEntry<String,Integer>> mapProductSales(String storeName, List<Worker> workers){
+        //Map sinarthsh gia na vrei ta proionta enos katasthmatos kai tis pwlhseis tou
         return storeList.stream()
                 .filter(store -> store.getStoreName().equals(storeName))
-                .filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))  // Only keep matching store
+                .filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
                 .flatMap(store -> store.getProducts().stream()
                         .map(p -> new AbstractMap.SimpleEntry<>(
                                 p.getProductName(),
-                                p.getTotalSales()  // Emit actual sales numbers
+                                p.getTotalSales()
                         ))
                 )
                 .collect(Collectors.toList());
     }
 
-
-
-    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales(List<Worker> workers) {
-        return storeList.stream().
-                filter(store -> shouldIncludeStore(this, workers,store.getStoreName())).
-                flatMap(store -> store.getProducts().stream()
-                .map(p -> new AbstractMap.SimpleEntry<>(
-                        p.getProductType(),p.getTotalSales()
-                )))
-                .collect(Collectors.toList());
-    }
-
     public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales(List<Worker> workers, String productCategory) {
+        /*
+        Map sinarthsh gia na vrei ta katasthmata pou periexoun mia sigkekrimenh kathgoria proiontwn
+         */
         return storeList.stream().
                 filter(store -> shouldIncludeStore(this, workers,store.getStoreName())).
                 flatMap(store -> store.getProducts().stream().
@@ -402,17 +438,10 @@ public class Worker extends Thread {
                 .collect(Collectors.toList());
     }
 
-    public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(List<Worker> workers){
-        return storeList.stream().
-                filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
-                .flatMap(store->store.getProducts().stream().
-                map(p -> new AbstractMap.SimpleEntry<>(
-                        store.getFoodCategory(),
-                        p.getTotalSales()
-                ))).collect(Collectors.toList());
-    }
-
     public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(List<Worker> workers, String foodCategory){
+        /*
+        Map sinarthsh gia na vrei ta katasthmata pou anhkoun se mia sigkekrimenh kathgoria katasthmatwn
+         */
         return storeList.stream().
                 filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
                 .filter(store -> store.getFoodCategory().equalsIgnoreCase(foodCategory))

@@ -126,7 +126,6 @@ public class Manager{
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
-            // Get all stores
             out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
             out.flush();
             Object response = in.readObject();
@@ -134,19 +133,20 @@ public class Manager{
             if (response instanceof ArrayList) {
                 ArrayList<Store> stores = (ArrayList<Store>) response;
 
-                // Store selection
                 System.out.println("Choose store to add product to: ");
                 for (int i = 0; i < stores.size(); i++) {
                     System.out.println(i + 1 + ". " + stores.get(i).getStoreName());
                 }
                 System.out.println("0. Exit");
                 int storeChoice = input.nextInt();
-                input.nextLine(); // Consume newline
+                input.nextLine();
 
                 if (storeChoice >= 1 && storeChoice <= stores.size()) {
                     Store store = stores.get(storeChoice - 1);
 
-                    // Get offline products
+                    /* emfanise kai ta anenerga proionta se periptwsh pou o manager thelei na
+                    ta kanei pali energa anti na kanei input neo antikeimeno
+                     */
                     out.writeObject(new WorkerFunctions("GET_OFFLINE_PRODUCTS", store));
                     out.flush();
                     Object offlineResponse = in.readObject();
@@ -163,10 +163,10 @@ public class Manager{
                             }
 
                             int productChoice = input.nextInt();
-                            input.nextLine(); // Consume newline
+                            input.nextLine();
 
                             if (productChoice > 0 && productChoice <= offlineProducts.size()) {
-                                // Reactivate existing product
+
                                 Product toReactivate = offlineProducts.get(productChoice - 1);
                                 toReactivate.setOnline(true);
 
@@ -187,7 +187,6 @@ public class Manager{
                         }
                     }
 
-                    // Create new product
                     System.out.println("\nCreating new product for " + store.getStoreName());
                     Product product = addProduct(input);
                     out.writeObject(new WorkerFunctions("ADD_PRODUCT", store, product));
@@ -207,6 +206,9 @@ public class Manager{
     }
 
     public static void salesPerProduct(Scanner input){
+        /*
+            Methodos gia epilogh statistikou kai emfanish tou
+         */
         try {
             System.out.println("Choose Report Type");
             System.out.println("1. Sales per product in a store");
@@ -222,6 +224,10 @@ public class Manager{
 
             switch (choice) {
                 case 1:
+                    /*
+                    Dialakse katasthma kai epestrepse tis pwlhseis kathe proiontos tou
+                    sigkekrimenou katasthmatos
+                     */
                     out.writeObject(new WorkerFunctions("SHOW_ALL_STORES"));
                     out.flush();
                     Object response = in.readObject();
@@ -247,29 +253,11 @@ public class Manager{
                         }
                         break;
                     }
+                case 2:
                     /*
-                case 2:
-                    out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES"));
-                    out.flush();
-                    Map<String, Integer> productCatRes = (Map<String, Integer>) in.readObject();
-                    System.out.println("Sales by Product Category: ");
-                    productCatRes.forEach((category,sales)->
-                            System.out.printf("%-20s: %d%n", category, sales));
-                    System.out.println("Total: "+ productCatRes.values().stream().mapToInt(Integer::intValue).sum());
-                    break;
-                case 3:
-                    out.writeObject(new WorkerFunctions("SHOP_CATEGORY_SALES"));
-                    out.flush();
-                    Map<String, Integer> shopCatRes = (Map<String, Integer>) in.readObject();
-                    System.out.println("Sales by Shop Category: ");
-                    shopCatRes.forEach((category,sales)->
-                            System.out.printf("%-20s: %d%n", category, sales));
-                    System.out.println("Total: "+ shopCatRes.values().stream().mapToInt(Integer::intValue).sum());
-                    break;
-
+                    Kane input kathgoria proiontos kai emfanise ta katasthmata pou thn periexoun
+                    kai poses pwlhseis exoun apo auth
                      */
-
-                case 2:
                     System.out.println("Give product category");
                     String prodCategory = input.nextLine();
                     out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES", prodCategory));
@@ -281,6 +269,10 @@ public class Manager{
                     System.out.println("Total: "+ productCatRes.values().stream().mapToInt(Integer::intValue).sum());
                     break;
                 case 3:
+                    /*
+                    Kane input kathgoria katasthmatos kai emfanise ta katasthmata pou anhkoun se auth
+                    kai tis sinolikes pwlhseis kathe katasthmatos
+                     */
                     System.out.println("Give shop category");
                     String foodCategory = input.nextLine();
                     out.writeObject(new WorkerFunctions("SHOP_CATEGORY_SALES", foodCategory));
