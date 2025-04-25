@@ -333,10 +333,12 @@ public class ActionForWorkers extends Thread{
                 Map<String, Integer> results = this.master.reduceProductSales(storeName);
                 out.writeObject(results);
             }else if (operation.equals("PRODUCT_CATEGORY_SALES")) {
-                Map<String, Integer> results = this.master.reduceProductCategorySales();
+                String productCategory = request.getName();
+                Map<String, Integer> results = this.master.reduceProductCategorySales(productCategory);
                 out.writeObject(results);
             }else if (operation.equals("SHOP_CATEGORY_SALES")) {
-                Map<String, Integer> results = this.master.reduceShopCategorySales();
+                String shopCategory = request.getName();
+                Map<String, Integer> results = this.master.reduceShopCategorySales(shopCategory);
                 out.writeObject(results);
             }else if(operation.equals("RESERVE_PRODUCT")){
                 Store store = (Store)request.getObject2();
