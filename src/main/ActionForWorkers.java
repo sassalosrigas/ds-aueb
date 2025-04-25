@@ -330,13 +330,15 @@ public class ActionForWorkers extends Thread{
                 }
             }else if (operation.equals("PRODUCT_SALES")) {
                 String storeName = (String) request.getName();
-                Map<String, Integer> results = this.master.aggregateProductSales(storeName);
+                Map<String, Integer> results = this.master.reduceProductSales(storeName);
                 out.writeObject(results);
             }else if (operation.equals("PRODUCT_CATEGORY_SALES")) {
-                Map<String, Integer> results = this.master.aggregateProductCategorySales();
+                String productCategory = request.getName();
+                Map<String, Integer> results = this.master.reduceProductCategorySales(productCategory);
                 out.writeObject(results);
             }else if (operation.equals("SHOP_CATEGORY_SALES")) {
-                Map<String, Integer> results = this.master.aggregateShopCategorySales();
+                String shopCategory = request.getName();
+                Map<String, Integer> results = this.master.reduceShopCategorySales(shopCategory);
                 out.writeObject(results);
             }else if(operation.equals("RESERVE_PRODUCT")){
                 Store store = (Store)request.getObject2();

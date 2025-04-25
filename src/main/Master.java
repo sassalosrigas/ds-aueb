@@ -138,6 +138,40 @@ public class Master{
         ));
     }
 
+    public Map<String, Integer> reduceProductCategorySales(String productCategory) {
+        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = workers.parallelStream()
+                .flatMap(worker -> worker.mapProductCategorySales(workers, productCategory).stream())
+                .collect(Collectors.toList());
+
+        Map<String, Integer> result =  mappedResults.stream()
+                .collect(Collectors.toMap(
+                        AbstractMap.SimpleEntry::getKey,   // Product category (e.g., "pizza")
+                        AbstractMap.SimpleEntry::getValue, // Sales count
+                        Integer::sum               // Sum sales per category
+                ));
+
+        //int total = result.values().stream().mapToInt(Integer::intValue).sum();
+        //result.put("total", total);
+
+        return result;
+    }
+
+    public Map<String,Integer> reduceShopCategorySales(String foodCategory) {
+        List<AbstractMap.SimpleEntry<String,Integer>> mappedResults = workers.parallelStream().
+                flatMap(worker -> worker.mapShopCategorySales(workers, foodCategory).stream()).collect(Collectors.toList());
+
+        Map<String,Integer> result = mappedResults.stream().collect(Collectors.toMap(
+                AbstractMap.SimpleEntry::getKey,
+                AbstractMap.SimpleEntry::getValue,
+                Integer::sum
+        ));
+
+        //int total = result.values().stream().mapToInt(Integer::intValue).sum();
+        //result.put("total", total);
+
+        return result;
+    }
+
 
     public List<Store> filterStores(String category, double minRate, double maxRate, String priceCat) {
         List<Store> mappedResults = workers.parallelStream().flatMap(worker -> worker.mapFilterStores(
