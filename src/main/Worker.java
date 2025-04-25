@@ -391,6 +391,17 @@ public class Worker extends Thread {
                 .collect(Collectors.toList());
     }
 
+    public List<AbstractMap.SimpleEntry<String, Integer>> mapProductCategorySales(List<Worker> workers, String productCategory) {
+        return storeList.stream().
+                filter(store -> shouldIncludeStore(this, workers,store.getStoreName())).
+                flatMap(store -> store.getProducts().stream().
+                        filter(p -> p.getProductType().equalsIgnoreCase(productCategory))
+                        .map(p -> new AbstractMap.SimpleEntry<>(
+                                store.getStoreName(),p.getTotalSales()
+                        )))
+                .collect(Collectors.toList());
+    }
+
     public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(List<Worker> workers){
         return storeList.stream().
                 filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
@@ -400,6 +411,18 @@ public class Worker extends Thread {
                         p.getTotalSales()
                 ))).collect(Collectors.toList());
     }
+
+    public List<AbstractMap.SimpleEntry<String,Integer>> mapShopCategorySales(List<Worker> workers, String foodCategory){
+        return storeList.stream().
+                filter(store -> shouldIncludeStore(this, workers, store.getStoreName()))
+                .filter(store -> store.getFoodCategory().equalsIgnoreCase(foodCategory))
+                .flatMap(store->store.getProducts().stream().
+                        map(p -> new AbstractMap.SimpleEntry<>(
+                                store.getStoreName(),
+                                p.getTotalSales()
+                        ))).collect(Collectors.toList());
+    }
+
 
 }
 

@@ -247,6 +247,7 @@ public class Manager{
                         }
                         break;
                     }
+                    /*
                 case 2:
                     out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES"));
                     out.flush();
@@ -258,6 +259,31 @@ public class Manager{
                     break;
                 case 3:
                     out.writeObject(new WorkerFunctions("SHOP_CATEGORY_SALES"));
+                    out.flush();
+                    Map<String, Integer> shopCatRes = (Map<String, Integer>) in.readObject();
+                    System.out.println("Sales by Shop Category: ");
+                    shopCatRes.forEach((category,sales)->
+                            System.out.printf("%-20s: %d%n", category, sales));
+                    System.out.println("Total: "+ shopCatRes.values().stream().mapToInt(Integer::intValue).sum());
+                    break;
+
+                     */
+
+                case 2:
+                    System.out.println("Give product category");
+                    String prodCategory = input.nextLine();
+                    out.writeObject(new WorkerFunctions("PRODUCT_CATEGORY_SALES", prodCategory));
+                    out.flush();
+                    Map<String, Integer> productCatRes = (Map<String, Integer>) in.readObject();
+                    System.out.println("Sales by Product Category: ");
+                    productCatRes.forEach((category,sales)->
+                            System.out.printf("%-20s: %d%n", category, sales));
+                    System.out.println("Total: "+ productCatRes.values().stream().mapToInt(Integer::intValue).sum());
+                    break;
+                case 3:
+                    System.out.println("Give shop category");
+                    String foodCategory = input.nextLine();
+                    out.writeObject(new WorkerFunctions("SHOP_CATEGORY_SALES", foodCategory));
                     out.flush();
                     Map<String, Integer> shopCatRes = (Map<String, Integer>) in.readObject();
                     System.out.println("Sales by Shop Category: ");
