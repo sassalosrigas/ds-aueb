@@ -61,9 +61,8 @@ public class Worker extends Thread {
 
     public boolean ping() {
         return isAlive;
-    }
+    } //stelnei signal oti einai up
 
-    public void kill(){ isAlive = false; }
 
 
     public int getWorkerId() {
