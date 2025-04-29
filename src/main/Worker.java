@@ -137,7 +137,7 @@ public class Worker extends Thread {
             apo akirwsh paraggelias
          */
         Store store = getStore(storeName);
-        if(store == null || !pendingPurchases.containsKey(storeName)) {
+        if(store == null || !pendingPurchases.containsKey(storeName+username)) {
             return false;
         }
         synchronized (store){   //Kleidwma store
