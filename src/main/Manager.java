@@ -154,13 +154,13 @@ public class Manager{
                     if (offlineResponse instanceof List) {
                         List<Product> offlineProducts = (List<Product>) offlineResponse;
 
-                        if (!offlineProducts.isEmpty()) {
+                        if (!offlineProducts.isEmpty()) {  //periptwsh pou iparxoun offline proionta
                             System.out.println("\nChoose offline product to reactivate:");
                             int counter = 0;
                             for (Product p : offlineProducts) {
                                 System.out.println(++counter + ". " + p.getProductName() + ": " + p.getProductType());
                             }
-                            System.out.println(++counter + ": Add new product");
+                            System.out.println(++counter + ". Add new product");
                             System.out.println("0. Exit");
                             int productChoice = input.nextInt();
                             input.nextLine();
@@ -190,7 +190,7 @@ public class Manager{
                             }else{
                                 System.out.println("Exiting process");
                             }
-                        }else{
+                        }else{  //periptwsh pou den iparxoun offline proionta
                             System.out.println("1. Add product");
                             System.out.println("0. Exit");
                             int choice = input.nextInt();
