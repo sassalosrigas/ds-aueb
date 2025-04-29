@@ -155,13 +155,13 @@ public class Manager{
                         List<Product> offlineProducts = (List<Product>) offlineResponse;
 
                         if (!offlineProducts.isEmpty()) {
-                            System.out.println("\nChoose offline product to reactivate (0 to add new):");
-                            for (int i = 0; i < offlineProducts.size(); i++) {
-                                Product p = offlineProducts.get(i);
-                                System.out.printf("%d. %s (%s)\n",
-                                        i + 1, p.getProductName(), p.getProductType());
+                            System.out.println("\nChoose offline product to reactivate:");
+                            int counter = 0;
+                            for (Product p : offlineProducts) {
+                                System.out.println(++counter + ". " + p.getProductName() + ": " + p.getProductType());
                             }
-
+                            System.out.println(++counter + ": Add new product");
+                            System.out.println("0. Exit");
                             int productChoice = input.nextInt();
                             input.nextLine();
 
@@ -170,10 +170,9 @@ public class Manager{
                                 Product toReactivate = offlineProducts.get(productChoice - 1);
                                 toReactivate.setOnline(true);
 
-                                // Get updated stock
                                 System.out.println("Enter new available amount:");
                                 int newAmount = input.nextInt();
-                                input.nextLine(); // Consume newline
+                                input.nextLine();
                                 toReactivate.setAvailableAmount(newAmount);
 
                                 out.writeObject(new WorkerFunctions("REACTIVATE_PRODUCT", store, toReactivate));
@@ -181,18 +180,34 @@ public class Manager{
                                 Object reactivationResponse = in.readObject();
                                 System.out.println("Product reactivated: " + reactivationResponse);
                                 return;
-                            } else if (productChoice != 0) {
-                                System.out.println("Invalid choice, creating new product");
+                            }else if(productChoice == 0){
+                                System.out.println("\nCreating new product for " + store.getStoreName());
+                                Product product = addProduct(input);
+                                out.writeObject(new WorkerFunctions("ADD_PRODUCT", store, product));
+                                out.flush();
+                                Object response2 = in.readObject();
+                                System.out.println("Server response: " + response2);
+                            }else{
+                                System.out.println("Exiting process");
+                            }
+                        }else{
+                            System.out.println("1. Add product");
+                            System.out.println("0. Exit");
+                            int choice = input.nextInt();
+                            input.nextLine();
+                            if(choice == 1){
+                                System.out.println("\nCreating new product for " + store.getStoreName());
+                                Product product = addProduct(input);
+                                out.writeObject(new WorkerFunctions("ADD_PRODUCT", store, product));
+                                out.flush();
+                                Object response2 = in.readObject();
+                                System.out.println("Server response: " + response2);
+                            }else{
+                                System.out.println("Exiting process");
                             }
                         }
                     }
 
-                    System.out.println("\nCreating new product for " + store.getStoreName());
-                    Product product = addProduct(input);
-                    out.writeObject(new WorkerFunctions("ADD_PRODUCT", store, product));
-                    out.flush();
-                    Object response2 = in.readObject();
-                    System.out.println("Server response: " + response2);
                 }
             }
 
