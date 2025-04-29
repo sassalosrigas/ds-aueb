@@ -15,13 +15,15 @@ public class JsonHandler {
     }
 
     public static Store readStoreFromJson(String filePath) throws IOException {
+        /*
+        Diavazei ena json arxeio kai dhmiourgei ena antikeimeno tupou Store apo auto
+         */
         File file = new File(filePath);
 
-        // Check if file exists and is not empty
-        if (!file.exists()) {
+        if (!file.exists()) { //elexos an iparxei to path
             throw new FileNotFoundException("JSON file not found: " + filePath);
         }
-        if (file.length() == 0) {
+        if (file.length() == 0) {  //an to arxeio einai keno
             throw new IOException("JSON file is empty: " + filePath);
         }
 
