@@ -16,6 +16,9 @@ public class Product implements Serializable {
                    @JsonProperty("ProductType") String productType,
                    @JsonProperty("Available Amount") int availableAmount,
                    @JsonProperty("Price") double price) {
+        /*
+        Constructor gia na xrhsimopoihthei sto parsing apo json
+         */
         this.productName = productName;
         this.productType = productType;
         this.availableAmount = availableAmount;
