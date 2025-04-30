@@ -32,6 +32,9 @@ public class Store implements Serializable {
                  @JsonProperty("NoOfVotes") int noOfVotes,
                  @JsonProperty("StoreLogo") String storeLogo,
                  @JsonProperty("Products") List<Product> products) {
+        /*
+        Constructor gia na xrhsimopoihthei sto parsing apo json
+         */
         this.storeName = storeName;
         this.latitude = latitude;
         this.longitude = longitude;

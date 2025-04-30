@@ -79,16 +79,18 @@ public class Manager{
             if(response instanceof ArrayList){
                 ArrayList<Store> stores = (ArrayList<Store>) response;
                 System.out.println("Choose store to remove product from: ");
-                for(int i=0;i<stores.size();i++){
-                    System.out.println(i+1 + ". " + stores.get(i).getStoreName());
+                int counter = 0;
+                for(Store store : stores){
+                    System.out.println(++counter + ". " + store.getStoreName());
                 }
                 System.out.println("0. Exit");
                 int choice = input.nextInt();
                 if(choice >= 1 && choice <= stores.size()){
                     Store store = stores.get(choice-1);
                     System.out.println("Choose product to be removed: ");
-                    for(int i=0;i<store.getProducts().size();i++){
-                        System.out.println(i+1 + ". " + store.getProducts().get(i).getProductName() + ": " + (store.getProducts().get(i).isOnline() ? "Online" : "Offline") );
+                    counter = 0;
+                    for(Product p: store.getProducts()){
+                        System.out.println(++counter + ". " + p.getProductName() + ": " + (p.isOnline() ? "Online" : "Offline"));
                     }
                     System.out.println("0. Exit");
                     choice = input.nextInt();
@@ -134,8 +136,9 @@ public class Manager{
                 ArrayList<Store> stores = (ArrayList<Store>) response;
 
                 System.out.println("Choose store to add product to: ");
-                for (int i = 0; i < stores.size(); i++) {
-                    System.out.println(i + 1 + ". " + stores.get(i).getStoreName());
+                int counter = 0;
+                for(Store store : stores){
+                    System.out.println(++counter + ". " + store.getStoreName());
                 }
                 System.out.println("0. Exit");
                 int storeChoice = input.nextInt();
@@ -156,7 +159,7 @@ public class Manager{
 
                         if (!offlineProducts.isEmpty()) {  //periptwsh pou iparxoun offline proionta
                             System.out.println("\nChoose offline product to reactivate:");
-                            int counter = 0;
+                            counter = 0;
                             for (Product p : offlineProducts) {
                                 System.out.println(++counter + ". " + p.getProductName() + ": " + p.getProductType());
                             }
@@ -178,7 +181,7 @@ public class Manager{
                                 out.writeObject(new WorkerFunctions("REACTIVATE_PRODUCT", store, toReactivate));
                                 out.flush();
                                 Object reactivationResponse = in.readObject();
-                                System.out.println("Product reactivated: " + reactivationResponse);
+                                System.out.println(reactivationResponse);
                                 return;
                             }else if(productChoice == 0){
                                 System.out.println("\nCreating new product for " + store.getStoreName());
@@ -322,15 +325,16 @@ public class Manager{
             if(response instanceof ArrayList){
                 ArrayList<Store> stores = (ArrayList<Store>) response;
                 System.out.println("Choose store: ");
-                for(int i = 0;i<stores.size();i++){
-                    System.out.println(i+1+ ". " + stores.get(i).getStoreName());
+                int counter = 0;
+                for(Store store : stores){
+                    System.out.println(++counter + ". " + store.getStoreName());
                 }
                 System.out.println("0 Exit");
                 int choice = input.nextInt();
                 if(choice >= 1 && choice <= stores.size()){
                     Store store = stores.get(choice-1);
                     System.out.println("Choose product to modify quantity: ");
-                    int counter = 0;
+                    counter = 0;
                     for(Product p: store.getProducts()){
                         System.out.println(++counter + ": " + p.getProductName() + " Current quantity: " + p.getAvailableAmount());
                     }
