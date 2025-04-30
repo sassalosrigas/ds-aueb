@@ -249,17 +249,16 @@ public class Worker extends Thread {
     }
 
     public synchronized String reactivateProduct(Store store, Product product) {
-        Store localStore = getStore(store.getStoreName());
-        if (localStore == null) return "Store not found";
-
-        for (Product p : localStore.getProducts()) {
+        /*
+        Sinarthsh pou kanei ena proion pali online
+         */
+        for (Product p : store.getProducts()) {
             if (p.getProductName().equals(product.getProductName())) {
                 p.setOnline(true);
                 p.setAvailableAmount(product.getAvailableAmount());
-                return "Reactivated product: " + p.getProductName();
             }
         }
-        return "Product not found";
+        return "Reactivated product " + product.getProductName() + " from " + store.getStoreName();
     }
 
     public boolean removeProduct(Store store, Product product) {

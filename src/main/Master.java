@@ -162,6 +162,9 @@ public class Master{
 
 
     public List<Store> filterStores(String category, double minRate, double maxRate, String priceCat) {
+        /*
+        Sinarthsh pou epistrefei mia lista katasthmatwn me bash ta filtra pou evale o pelaths
+         */
         List<Store> mappedResults = workers.parallelStream().flatMap(worker -> worker.mapFilterStores(
                 category, minRate, maxRate, priceCat,workers
         ).stream()).collect(Collectors.toList());
@@ -169,6 +172,9 @@ public class Master{
     }
 
     public boolean isAlive(Worker worker) {
+        /*
+        Elegxos an einai energos enas worker
+         */
         final boolean[] result = {false};
         Thread t = new Thread(() -> {
             result[0] = worker.ping();
