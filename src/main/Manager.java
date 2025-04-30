@@ -266,6 +266,7 @@ public class Manager{
                             System.out.println("Sales for " +store.getStoreName()+": ");
                             results.forEach((product,sales)->
                                     System.out.printf("%-20s: %d%n", product, sales));
+                            System.out.println("Total: " + results.values().stream().mapToInt(Integer::valueOf).sum());
                         }else if(choice != 0){
                             System.out.println("Invalid input");
                         }
