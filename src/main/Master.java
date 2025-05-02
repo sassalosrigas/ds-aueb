@@ -26,7 +26,7 @@ public class Master{
         int workerCount = Integer.parseInt(config.getProperty("workerCount"));
         workersSize = workerCount;
         for (int i = 0; i < workerCount; i++) {
-            Worker worker = new Worker(i);
+            Worker worker = new Worker(i,this);
             worker.start();
             workers.add(worker);
         }
@@ -39,7 +39,7 @@ public class Master{
         workersSize = workerCount;
         this.workers = Collections.synchronizedList(new ArrayList<>());
         for (int i = 0; i < workerCount; i++) {
-            Worker worker = new Worker(i);
+            Worker worker = new Worker(i,this);
             worker.start();
             workers.add(worker);
         }
@@ -91,6 +91,10 @@ public class Master{
                 }
             }
         }).start();
+    }
+
+    public List<Worker> getWorkers() {
+        return this.workers;
     }
 
     public static int hashToWorker(String storeName, int numOfWorkers) {

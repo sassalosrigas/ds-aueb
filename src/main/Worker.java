@@ -12,9 +12,11 @@ public class Worker extends Thread {
     private Map<String, List<PendingPurchase>> pendingPurchases = new HashMap<>();
     private Queue<Runnable> pendingTasks = new LinkedList<>();
     private boolean isAlive = true;
+    private Master master;
 
-    public Worker(int workerId) {
+    public Worker(int workerId, Master master) {
         this.workerId = workerId;
+        this.master = master;
     }
 
     private boolean running = true;
@@ -178,7 +180,49 @@ public class Worker extends Thread {
 
             replicaStore.setStars(primaryStore.getStars());
             replicaStore.calculatePriceCategory();
+
+            Worker primaryWorker = getWorkerForStore(primaryStore.getStoreName(), true);
+            if (primaryWorker != null) {
+                Map<String, List<PendingPurchase>> primaryPending =
+                        primaryWorker.getPendingPurchasesForStore(primaryStore.getStoreName());
+
+                pendingPurchases.keySet().removeIf(key -> key.startsWith(primaryStore.getStoreName()));
+
+                pendingPurchases.putAll(primaryPending);
+            }
         }
+
+
+
+        Worker primaryWorker = getWorkerForStore(primaryStore.getStoreName(),true);
+        if (primaryWorker != null) {
+            Map<String, List<PendingPurchase>> primaryPending =
+                    primaryWorker.getPendingPurchasesForStore(primaryStore.getStoreName());
+            this.pendingPurchases.putAll(primaryPending); // Overwrite replica's pending state
+        }
+
+    }
+
+    public  Worker getWorkerForStore(String storeName, boolean getPrimary) {
+        /*
+        Vriskei ton worker pou exei apothikeumeno to primary store
+         */
+        List<Integer> workerIndices = getWorkerIndicesForStore(storeName, master.getWorkers().size());
+        int workerIndex = getPrimary ? workerIndices.get(0) : workerIndices.get(1);
+
+        if (workerIndex >= 0 && workerIndex < master.getWorkers().size()) {
+            return master.getWorkers().get(workerIndex);
+        }
+        return null;
+    }
+
+    public Map<String, List<PendingPurchase>> getPendingPurchasesForStore(String storeName) {
+        /*
+        Vriskei ta pending purchases enos store
+         */
+        return pendingPurchases.entrySet().stream()
+                .filter(e -> e.getKey().startsWith(storeName))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public synchronized boolean completePurchase(String storeName, String username) {
