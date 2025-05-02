@@ -1,0 +1,55 @@
+{
+  "storeName" : "O Gatos",
+  "foodCategory" : "Small Plates",
+  "storeLogo" : "src/logos/gatos.png",
+  "latitude" : 37.991665,
+  "longitude" : 23.738007,
+  "noOfVotes" : 300,
+  "stars" : 4.2,
+  "products" : [ {
+    "productName" : "Kolokythokeftedes",
+    "productType" : "Appetizer",
+    "availableAmount" : 200,
+    "price" : 3
+  }, {
+    "productName" : "Tigania Kotopoulo",
+    "productType" : "Mezes",
+    "availableAmount" : 300,
+    "price" : 5
+  }, {
+    "productName" : "Xtapodi Ksidato",
+    "productType" : "Mezes",
+    "availableAmount" : 300,
+    "price" : 5.7
+  }, {
+    "productName" : "Saganaki me Sousami kai Meli",
+    "productType" : "Appetizer",
+    "availableAmount" : 900,
+    "price" : 3.4
+  }, {
+    "productName" : "Lefko Ksiro",
+    "productType" : "Wine",
+    "availableAmount" : 5000,
+    "price" : 5
+  }, {
+    "productName" : "Kokkino Hmiglyko",
+    "productType" : "Wine",
+    "availableAmount" : 6000,
+    "price" : 5
+  }, {
+    "productName" : "Vergina",
+    "productType" : "Beer",
+    "availableAmount" : 3000,
+    "price" : 2.8
+  }, {
+    "productName" : "Tsipouro",
+    "productType" : "Drink",
+    "availableAmount" : 1500,
+    "price" : 4
+  }, {
+    "productName" : "Nymfi",
+    "productType" : "Beer",
+    "availableAmount" : 2500,
+    "price" : 2.5
+  }]
+}

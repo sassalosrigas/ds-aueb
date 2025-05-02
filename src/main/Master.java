@@ -11,6 +11,7 @@ public class Master{
     Socket socket;
     private final List<Worker> workers;
     private Properties config;
+    private static int workersSize;
 
     public Master(){
         this.workers = Collections.synchronizedList(new ArrayList<Worker>());
@@ -23,6 +24,7 @@ public class Master{
         }
 
         int workerCount = Integer.parseInt(config.getProperty("workerCount"));
+        workersSize = workerCount;
         for (int i = 0; i < workerCount; i++) {
             Worker worker = new Worker(i);
             worker.start();
@@ -34,6 +36,7 @@ public class Master{
         /*
             Dhmiourgia listas worker kai enarksh tou kathenos
          */
+        workersSize = workerCount;
         this.workers = Collections.synchronizedList(new ArrayList<>());
         for (int i = 0; i < workerCount; i++) {
             Worker worker = new Worker(i);
@@ -74,8 +77,8 @@ public class Master{
                 System.out.println("Opening server...");
                 serverSocket = new ServerSocket(8080);
                 while (true) {
-                    socket = serverSocket.accept();
-                    Thread t = new ActionForWorkers(socket, workers, this);
+                    socket = serverSocket.accept();  //perimene energeia
+                    Thread t = new ActionForWorkers(socket, workers, this); //molis labeis request anethese to se ena kainourio actionsForWorkers thread
                     t.start();
                 }
             } catch (Exception e) {
@@ -97,87 +100,92 @@ public class Master{
         return Math.abs(storeName.hashCode()) % numOfWorkers;
     }
 
-    /*
-    public Map<String, Integer> aggregateProductSales(String storeName) {
-        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
-        for (Worker worker : workers) {
-            mappedResults.addAll(worker.mapProductSales(storeName));
-        }
-        Map<String, Integer> results = new HashMap<>();
-        for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
-            results.put(entry.getKey(), entry.getValue());
-        }
-        return results;
+    public static List<Integer> getWorkerIndicesForStore(String storeName, int numOfWorkers) {
+        /*
+        Bres ta index twn workers pou tha apothikeuseis to primary kai to replica store
+         */
+        int mainIndex = Math.abs(storeName.hashCode()) % numOfWorkers;
+        int replicaIndex = (mainIndex + 1) % numOfWorkers;
+        return Arrays.asList(mainIndex, replicaIndex);
     }
-
-
-    public Map<String, Integer> reduceProductSales(String storeName) {
-        List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = new ArrayList<>();
-        List<Thread> workerThreads = new ArrayList<>();
-        for (Worker worker : workers) {
-            Thread t = new Thread(()-> {
-                synchronized (mappedResults) {
-                    mappedResults.addAll(worker.mapProductSales(storeName));
-                }
-            });
-            workerThreads.add(t);
-            t.start();
-        }
-        for (Thread t : workerThreads) {
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        Map<String, Integer> results = new HashMap<>();
-        synchronized (mappedResults){
-            for (AbstractMap.SimpleEntry<String, Integer> entry : mappedResults) {
-                results.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return results;
-    }
-
-     */
 
     public Map<String,Integer> reduceProductSales(String storeName) {
+        /*
+        Reduce sinarthsh gia epistrofh pwlhsewn kathe proiontos enos katasthmatos
+         */
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = workers.parallelStream()
-                .flatMap(worker -> worker.mapProductSales(storeName).stream())
+                .flatMap(worker -> worker.mapProductSales(storeName, workers).stream())//kalese map
                 .collect(Collectors.toList());
 
-        return mappedResults.stream().collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+        Map<String,Integer> result =
+                mappedResults.stream().collect(Collectors.toMap
+                        (AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue, Integer::sum)); //kane reduce kai ipologise sinolo
+        return result;
     }
 
-    public Map<String, Integer> reduceProductCategorySales() {
+
+
+    public Map<String, Integer> reduceProductCategorySales(String productCategory) {
+        /*
+        Reduce sinarthsh gia tis pwlhseis katasthmatwn se mia sigkekrimenh kathgoria proiontwn
+         */
         List<AbstractMap.SimpleEntry<String, Integer>> mappedResults = workers.parallelStream()
-                .flatMap(worker -> worker.mapProductCategorySales().stream())
+                .flatMap(worker -> worker.mapProductCategorySales(workers, productCategory).stream())//kalese map
                 .collect(Collectors.toList());
 
-        return mappedResults.stream()
+        Map<String, Integer> result =  mappedResults.stream()    //kane reduce kai ipologise sinolo
                 .collect(Collectors.toMap(
-                        AbstractMap.SimpleEntry::getKey,   // Product category (e.g., "pizza")
-                        AbstractMap.SimpleEntry::getValue, // Sales count
-                        Integer::sum               // Sum sales per category
+                        AbstractMap.SimpleEntry::getKey,
+                        AbstractMap.SimpleEntry::getValue,
+                        Integer::sum
                 ));
+
+
+        return result;
     }
 
-    public Map<String,Integer> reduceShopCategorySales() {
+    public Map<String,Integer> reduceShopCategorySales(String foodCategory) {
+        /*
+        Sinarthsh pou upologizei pwlhseis kathe katasthmatos pou anhkei se sigkekrimenh kathgoria
+         */
         List<AbstractMap.SimpleEntry<String,Integer>> mappedResults = workers.parallelStream().
-                flatMap(worker -> worker.mapShopCategorySales().stream()).collect(Collectors.toList());
+                flatMap(worker -> worker.mapShopCategorySales(workers, foodCategory).stream()).collect(Collectors.toList()); //kane map
 
-        return mappedResults.stream().collect(Collectors.toMap(
+        Map<String,Integer> result = mappedResults.stream().collect(Collectors.toMap(  //kane reduce kai ipologise sinolo
                 AbstractMap.SimpleEntry::getKey,
                 AbstractMap.SimpleEntry::getValue,
                 Integer::sum
         ));
+
+        return result;
     }
 
+
     public List<Store> filterStores(String category, double minRate, double maxRate, String priceCat) {
+        /*
+        Sinarthsh pou epistrefei mia lista katasthmatwn me bash ta filtra pou evale o pelaths
+         */
         List<Store> mappedResults = workers.parallelStream().flatMap(worker -> worker.mapFilterStores(
-                category, minRate, maxRate, priceCat
+                category, minRate, maxRate, priceCat,workers
         ).stream()).collect(Collectors.toList());
         return mappedResults.stream().distinct().collect(Collectors.toList());
+    }
+
+    public boolean isAlive(Worker worker) {
+        /*
+        Elegxos an einai energos enas worker
+         */
+        final boolean[] result = {false};
+        Thread t = new Thread(() -> {
+            result[0] = worker.ping();
+        });
+        t.start();
+        try {
+            t.join(2000); // 2 seconds timeout
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return !t.isAlive() && result[0];
     }
 
 

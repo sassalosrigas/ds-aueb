@@ -16,6 +16,9 @@ public class Product implements Serializable {
                    @JsonProperty("ProductType") String productType,
                    @JsonProperty("Available Amount") int availableAmount,
                    @JsonProperty("Price") double price) {
+        /*
+        Constructor gia na xrhsimopoihthei sto parsing apo json
+         */
         this.productName = productName;
         this.productType = productType;
         this.availableAmount = availableAmount;
@@ -66,6 +69,9 @@ public class Product implements Serializable {
     public int getTotalSales() {
         return totalSales;
     }
+    public void setTotalSales(int sales){
+        this.totalSales = sales;
+    }
 
     public void addSales(int quantity) {
         totalSales += quantity;
@@ -74,6 +80,7 @@ public class Product implements Serializable {
     public boolean isOnline() {
         return showOnline;
     }
+
 
     @Override
     public boolean equals(Object o) {

@@ -1,0 +1,40 @@
+{
+  "storeName" : "CC Pasta",
+  "foodCategory" : "Pasta",
+  "storeLogo" : "src/logos/ccpasta.png",
+  "latitude" : 37.988147,
+  "longitude" : 23.738907,
+  "noOfVotes" : 40,
+  "stars" : 4.5,
+  "products" : [ {
+    "productName" : "Parmesan Chicken",
+    "productType" : "Pasta",
+    "availableAmount" : 500,
+    "price" : 7.5
+  }, {
+    "productName" : "Brocoli Chicken",
+    "productType" : "Pasta",
+    "availableAmount" : 800,
+    "price" : 8
+  }, {
+    "productName" : "Spicy Carbonara",
+    "productType" : "Pasta",
+    "availableAmount" : 950,
+    "price" : 7.2
+  }, {
+    "productName" : "Pasta Salad",
+    "productType" : "Salad",
+    "availableAmount" : 900,
+    "price" : 5.5
+  }, {
+    "productName" : "Parmesan",
+    "productType" : "Sauce",
+    "availableAmount" : 6000,
+    "price" : 1
+  }, {
+    "productName" : "Red Bull",
+    "productType" : "Drink",
+    "availableAmount" : 1000,
+    "price" : 2.5
+  }]
+}

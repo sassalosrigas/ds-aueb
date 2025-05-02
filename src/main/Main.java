@@ -9,17 +9,21 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         Scanner in = new Scanner(System.in);
-        new Master();
-        sleep(2000);//Arxikopoihsh kai run Master server
+        new Master();  //Arxikopoihsh kai run Master server
+        sleep(2500);  //kane sleep gia na exei xrono na anoiksei kai na arxikopoihthei o master allies ta addStore ton vriskoun kleisto kai dinoun error
+        //ama bgalei error kamia fora thelei restart
         Manager.addStore(new Scanner("src/stores/store.json"));  //Arxikopoihsh stores me thn ekkinhsh
         Manager.addStore(new Scanner("src/stores/store2.json"));
         Manager.addStore(new Scanner("src/stores/store3.json"));
+        Manager.addStore(new Scanner("src/stores/store4.json"));
+        Manager.addStore(new Scanner("src/stores/store5.json"));
+        Manager.addStore(new Scanner("src/stores/store6.json"));
+        Manager.addStore(new Scanner("src/stores/store7.json"));
         int mode;
         do {
             System.out.println("Choose mode: (1) manager, (2) client, (3) Exit");
             mode = in.nextInt();
             if(mode == 3){
-                System.out.println("ei");
                 break;
             }
             if (mode == 1) {
@@ -101,6 +105,5 @@ public class Main {
             }
         }while(true);
         in.close();
-
     }
 }

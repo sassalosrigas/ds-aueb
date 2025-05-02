@@ -32,6 +32,9 @@ public class Store implements Serializable {
                  @JsonProperty("NoOfVotes") int noOfVotes,
                  @JsonProperty("StoreLogo") String storeLogo,
                  @JsonProperty("Products") List<Product> products) {
+        /*
+        Constructor gia na xrhsimopoihthei sto parsing apo json
+         */
         this.storeName = storeName;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -78,14 +81,6 @@ public class Store implements Serializable {
         }
     }
 
-    public int getTotalSales(){
-        int total = 0;
-        for(Product product: products){
-            total += product.getTotalSales();
-        }
-        return total;
-    }
-
     public void applyRating(int rating){
         double total = stars * noOfVotes + rating;
         this.stars = total/ (noOfVotes + 1);
@@ -114,6 +109,16 @@ public class Store implements Serializable {
 
     public List<Product> getProducts() { return products; }
     public void setProducts(List<Product> products) { this.products = products; }
+
+    public Product getProduct(String productName) {
+        Product prod = null;
+        for(Product product : products){
+            if(product.getProductName().equals(productName)){
+                return product;
+            }
+        }
+        return prod;
+    }
 
     @Override
     public boolean equals(Object o) {
